@@ -1,5 +1,5 @@
 -- ==============================================================================
--- EV CYBER ACADEMY – SEED DATA FOR SUPABASE
+-- EV CYBER ACADEMY – PRODUCTION SEED DATA FOR SUPABASE
 -- Seed: supabase/seed.sql
 -- ==============================================================================
 
@@ -171,8 +171,8 @@ INSERT INTO public.videos (
 ) VALUES
 (
     'v1111111-1111-1111-1111-111111111111',
-    'Inside the EV Cyber War Room: How We Train Top 1% Cyber Defenders',
-    'A high-octane walkthrough of our live-fire cyber range, real-time intrusion simulations, and rigorous practical training methodology.',
+    'Inside the EV Cyber War Room: Live Cyber Range Walkthrough',
+    'A walkthrough of our live-fire cyber range, real-time intrusion simulations, and practical training methodology.',
     'https://www.youtube.com/watch?v=inWWhr5tnEA',
     'inWWhr5tnEA',
     'hero',
@@ -186,8 +186,8 @@ INSERT INTO public.videos (
 ),
 (
     'v2222222-2222-2222-2222-222222222222',
-    'SOC Analyst L1/L2 Course Overview & Lab Tour',
-    'Detailed overview of the 12-week Certified SOC Analyst program syllabus, live SIEM lab environment, and career placement mentorship.',
+    'SOC Analyst L1/L2 Program Overview & Lab Architecture',
+    'Detailed overview of the 12-week Certified SOC Analyst syllabus, live SIEM lab environment, and triage exercises.',
     'https://www.youtube.com/watch?v=3Kq1MIfTWCE',
     '3Kq1MIfTWCE',
     'course_details',
@@ -201,8 +201,8 @@ INSERT INTO public.videos (
 ),
 (
     'v3333333-3333-3333-3333-333333333333',
-    'Offensive Red Team Masterclass – Active Directory Exploitation Preview',
-    'Instructor-led demonstration of modern Kerberos ticket forging and defensive evasion tactics covered in our 16-week Offensive Security Track.',
+    'Offensive Red Team Track: Active Directory Exploitation Preview',
+    'Demonstration of modern Kerberos ticket forging and defensive evasion tactics covered in our 16-week Offensive Security Track.',
     'https://www.youtube.com/watch?v=2ePf9rue1Ao',
     '2ePf9rue1Ao',
     'course_details',
@@ -215,42 +215,7 @@ INSERT INTO public.videos (
     3
 );
 
--- 3. TESTIMONIALS SEED (Authentic Corporate & Placement Feedback)
-INSERT INTO public.testimonials (
-    name, role, company, avatar_url, content, rating, is_featured, sort_order
-) VALUES
-(
-    'Arjun Nair',
-    'Senior SOC Analyst',
-    'Palo Alto Networks',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-    'EV Cyber Academy does not waste hours on boring slides. We spent 80% of our batch triage-analyzing real malware traffic and writing correlation rules in Splunk. Got placed at Palo Alto Networks within 45 days of graduation.',
-    5,
-    TRUE,
-    1
-),
-(
-    'Pooja Sundaram',
-    'Red Team Consultant',
-    'Deloitte Cyber Risk',
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=250',
-    'The Active Directory exploitation labs and EDR bypass modules are gold standard. The mentors are practicing red teamers who held our feet to the fire in realistic emulation drills. Absolutely career-defining.',
-    5,
-    TRUE,
-    2
-),
-(
-    'Vikramaditya Sharma',
-    'Cloud Security Engineer',
-    'HCL Tech Security Practice',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
-    'Transitioned from a traditional sysadmin role to Cloud DevSecOps in 3 months. The Kubernetes and Terraform security labs gave me hands-on projects I could showcase directly in my portfolio.',
-    5,
-    TRUE,
-    3
-);
-
--- 4. FAQS SEED
+-- 3. FAQS SEED
 INSERT INTO public.faqs (category, question, answer, sort_order, is_active) VALUES
 (
     'Admissions & Eligibility',
@@ -288,7 +253,7 @@ INSERT INTO public.faqs (category, question, answer, sort_order, is_active) VALU
     TRUE
 );
 
--- 5. SITE SETTINGS SEED (Admin-Controlled Content)
+-- 4. SITE SETTINGS SEED (Admin-Controlled Content)
 INSERT INTO public.site_settings (key, value, description) VALUES
 (
     'hero_content',
@@ -299,7 +264,7 @@ INSERT INTO public.site_settings (key, value, description) VALUES
         "subheadline": "Real-world cyber ranges. Enterprise SIEM & Red Team labs. Zero fluff. Accelerate your career into high-impact cybersecurity roles with elite mentorship.",
         "primary_cta_text": "Explore Programs & Apply",
         "secondary_cta_text": "Watch Cyber Range Demo",
-        "trust_badge_text": "Over 2,500+ Security Engineers Trained & Certified"
+        "trust_badge_text": "Live Enterprise Cyber Range & Security Operations Training"
     }'::jsonb,
     'Homepage Hero section headline and copy'
 ),
@@ -315,62 +280,3 @@ INSERT INTO public.site_settings (key, value, description) VALUES
     'Official contact phone, email and whatsapp'
 )
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-
--- 6. SAMPLE LEADS SEED (Realistic CRM leads for immediate testing)
-INSERT INTO public.leads (
-    full_name, email, phone, course_id, college_company,
-    experience_level, status, referral_source, utm_source, utm_medium, utm_campaign
-) VALUES
-(
-    'Rohan Kulkarni',
-    'rohan.kulkarni@example.com',
-    '+91 98450 11223',
-    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-    'Infosys Technologies',
-    '0-2 Years IT/Dev',
-    'New',
-    'LinkedIn Ads',
-    'linkedin',
-    'paid_social',
-    'soc_analyst_cohort_q4'
-),
-(
-    'Sneha Venkataraman',
-    'sneha.v@example.com',
-    '+91 97312 44556',
-    'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
-    'PES University',
-    'Student / Fresher',
-    'Interested',
-    'Google Search',
-    'google',
-    'cpc',
-    'offensive_security_search'
-),
-(
-    'Manish Verma',
-    'manish.verma@example.com',
-    '+91 91234 56789',
-    'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f',
-    'Wipro Digital',
-    '2-5 Years Tech/Security',
-    'Contacted',
-    'Direct Website',
-    'organic',
-    'web',
-    'brand_direct'
-),
-(
-    'Ananya Sen',
-    'ananya.sen@example.com',
-    '+91 99887 76655',
-    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-    'TCS Cybersecurity Practice',
-    '0-2 Years IT/Dev',
-    'Converted',
-    'Alumni Referral',
-    'referral',
-    'word_of_mouth',
-    'alumni_network'
-);
-

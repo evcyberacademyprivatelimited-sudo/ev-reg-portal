@@ -10,7 +10,6 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
-  switchMockRole: (role: 'super_admin' | 'staff') => void;
   staffList: UserProfile[];
 }
 
@@ -40,7 +39,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (profile) {
               setUser(profile as UserProfile);
             } else {
-              // Fallback user from session metadata
               setUser({
                 id: session.user.id,
                 email: session.user.email || '',
@@ -51,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
 
-          // Fetch all staff for assignment dropdowns
+          // Fetch active staff for assignments
           const { data: staffMembers } = await supabase
             .from('profiles')
             .select('*')
@@ -64,7 +62,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Supabase auth initialization error:', err);
         }
       } else {
-        // Load mock session from localStorage
         const stored = localStorage.getItem(LOCAL_AUTH_KEY);
         if (stored) {
           try {
@@ -145,22 +142,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: (err as Error).message };
       }
     } else {
-      // Demo / Offline Mode login matching credentials
+      // Local development fallback
+      const cleanEmail = email.trim().toLowerCase();
       const matched = INITIAL_STAFF.find(
-        (s) => s.email.toLowerCase() === email.trim().toLowerCase()
+        (s) => s.email.toLowerCase() === cleanEmail
       );
 
-      if (matched || email.includes('admin') || email.includes('staff')) {
-        const activeUser: UserProfile = matched || {
-          id: 'u-' + Math.random().toString(36).substring(2, 7),
-          email: email.trim(),
-          full_name: email.includes('admin') ? 'Super Administrator' : 'Academic Counselor',
-          role: email.includes('admin') ? 'super_admin' : 'staff',
-          is_active: true,
-        };
-
-        setUser(activeUser);
-        localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(activeUser));
+      if (matched) {
+        setUser(matched);
+        localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(matched));
         setIsLoading(false);
         return { success: true };
       }
@@ -168,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       return {
         success: false,
-        error: 'Invalid credentials. You can test with admin@evcyberacademy.com or counselor@evcyberacademy.com',
+        error: 'Invalid credentials. Please contact your system administrator.',
       };
     }
   };
@@ -181,18 +171,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(LOCAL_AUTH_KEY);
   };
 
-  const switchMockRole = (role: 'super_admin' | 'staff') => {
-    const updated: UserProfile = {
-      id: role === 'super_admin' ? 'u-admin-1' : 'u-staff-1',
-      email: role === 'super_admin' ? 'admin@evcyberacademy.com' : 'kavitha.counselor@evcyberacademy.com',
-      full_name: role === 'super_admin' ? 'Super Administrator' : 'Kavitha R. (Lead Counselor)',
-      role: role,
-      is_active: true,
-    };
-    setUser(updated);
-    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(updated));
-  };
-
   const value = {
     user,
     isAuthenticated: Boolean(user),
@@ -200,7 +178,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     signIn,
     signOut,
-    switchMockRole,
     staffList,
   };
 
@@ -214,4 +191,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-

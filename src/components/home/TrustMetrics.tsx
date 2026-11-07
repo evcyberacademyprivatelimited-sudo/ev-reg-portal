@@ -1,56 +1,51 @@
 import React from 'react';
-import { Users, Briefcase, Award, Star, Terminal } from 'lucide-react';
+import { Terminal, ShieldCheck, Target, Users } from 'lucide-react';
 
 export const TrustMetrics: React.FC = () => {
-  const metrics = [
-    {
-      icon: Users,
-      value: '2,500+',
-      label: 'Security Engineers Trained',
-      subtext: 'Across enterprise cohorts',
-    },
-    {
-      icon: Briefcase,
-      value: '94%',
-      label: 'Placement Success Rate',
-      subtext: 'Within 90 days of completion',
-    },
+  const highlights = [
     {
       icon: Terminal,
-      value: '450+',
-      label: 'Live Incident Range Drills',
-      subtext: 'Real-world adversary telemetry',
+      title: 'Isolated Cyber Range',
+      description: 'Dedicated cloud instances for live packet analysis & intrusion drills',
     },
     {
-      icon: Star,
-      value: '4.9 / 5',
-      label: 'Average Cohort Rating',
-      subtext: 'Verified alumni feedback',
+      icon: ShieldCheck,
+      title: 'Enterprise SIEM & EDR',
+      description: 'Real telemetry parsing with Splunk, Elastic, Zeek & Sysmon',
+    },
+    {
+      icon: Target,
+      title: 'MITRE ATT&CK Mapped',
+      description: 'Scenario objectives structured directly on enterprise threat frameworks',
+    },
+    {
+      icon: Users,
+      title: 'Practitioner Mentorship',
+      description: 'Live interactive cohorts led by practicing defensive engineers',
     },
   ];
 
   return (
-    <section className="bg-slate-900 border-y border-slate-800 py-12">
+    <section className="bg-slate-900 border-y border-slate-800 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {metrics.map((item, idx) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {highlights.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div
                 key={idx}
-                className="p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-center flex flex-col items-center justify-center space-y-2 hover:border-red-500/30 transition-colors"
+                className="p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-start gap-3.5 hover:border-red-500/30 transition-colors"
               >
-                <div className="w-10 h-10 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 flex items-center justify-center shrink-0 mt-0.5">
                   <Icon className="w-5 h-5" />
                 </div>
-                <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                  {item.value}
-                </div>
-                <div className="text-sm font-semibold text-slate-200">
-                  {item.label}
-                </div>
-                <div className="text-xs text-slate-400">
-                  {item.subtext}
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-white tracking-tight">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
             );
@@ -60,4 +55,3 @@ export const TrustMetrics: React.FC = () => {
     </section>
   );
 };
-

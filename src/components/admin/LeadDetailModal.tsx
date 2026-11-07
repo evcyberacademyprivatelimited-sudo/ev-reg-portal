@@ -8,7 +8,6 @@ import {
   Building,
   GraduationCap,
   Calendar,
-  Clock,
   Send,
   UserCheck,
   Tag,
@@ -31,6 +30,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
   const {
     courses,
     updateLeadStatus,
+    updateLeadFollowUp,
     assignLead,
     getLeadNotes,
     addLeadNote,
@@ -43,6 +43,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
 
   const [currentStatus, setCurrentStatus] = useState<LeadStatus>(lead.status);
   const [statusNote, setStatusNote] = useState('');
+  const [followUpDate, setFollowUpDate] = useState(lead.next_follow_up_date || '');
   const [assignedStaffId, setAssignedStaffId] = useState<string>(lead.assigned_to || '');
   const [newNote, setNewNote] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -75,6 +76,16 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
     }
   };
 
+  const handleFollowUpChange = async (dateVal: string) => {
+    setFollowUpDate(dateVal);
+    const res = await updateLeadFollowUp(lead.id, dateVal);
+    if (res.success) {
+      success('Follow-up date scheduled.');
+    } else {
+      notifyError('Failed to update follow-up date', res.error);
+    }
+  };
+
   const handleAssignmentChange = async (newStaffId: string) => {
     setAssignedStaffId(newStaffId);
     const res = await assignLead(lead.id, newStaffId);
@@ -93,7 +104,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
     setIsAddingNote(false);
     if (res.success) {
       setNewNote('');
-      success('Internal note recorded.');
+      success('Internal counselor note recorded.');
     } else {
       notifyError('Failed to add note', res.error);
     }
@@ -191,8 +202,8 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Left Column: Lead Info & Pipeline Assignment */}
-          <div className="md:col-span-5 space-y-6">
+          {/* Left Column: Lead Info & Pipeline Controls */}
+          <div className="md:col-span-5 space-y-5">
             {/* Candidate Details Card */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -230,7 +241,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
               </h3>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 block">Update Status:</label>
+                <label className="text-xs font-semibold text-slate-700 block">Current Status:</label>
                 <select
                   value={currentStatus}
                   onChange={(e) => setCurrentStatus(e.target.value as LeadStatus)}
@@ -263,6 +274,22 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Scheduled Follow-Up Date */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-red-600" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Scheduled Follow-Up Date
+                </h3>
+              </div>
+              <input
+                type="date"
+                value={followUpDate}
+                onChange={(e) => handleFollowUpChange(e.target.value)}
+                className="w-full text-xs font-semibold p-2.5 rounded-lg border border-slate-300 bg-white"
+              />
             </div>
 
             {/* Staff Counselor Assignment */}
@@ -303,7 +330,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>Internal Counselor Notes ({notes.length})</span>
+                <span>Counselor Notes ({notes.length})</span>
               </button>
 
               <button
@@ -340,7 +367,7 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
                 <form onSubmit={handleAddNote} className="space-y-2">
                   <textarea
                     rows={3}
-                    placeholder="Record notes on candidate call, syllabus shared, readiness for lab..."
+                    placeholder="Record notes on candidate call, syllabus shared, lab readiness..."
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-600/20"
@@ -438,4 +465,3 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
     </div>
   );
 };
-

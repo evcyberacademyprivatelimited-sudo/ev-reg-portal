@@ -92,7 +92,7 @@ export const AcademyIntro: React.FC = () => {
                 <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
                   <div className="flex items-center gap-2 text-xs text-slate-300">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Industry Mentors from Fortune 500 Cyber Teams</span>
+                    <span>Practicing Enterprise Security Analysts &amp; Red Team Mentors</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-300">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />

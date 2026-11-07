@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/common/Logo';
-import { Shield, Lock, Mail, ArrowRight, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 
 export const LoginPage: React.FC = () => {
@@ -39,24 +39,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickDemoLogin = async (role: 'admin' | 'staff') => {
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    const targetEmail =
-      role === 'admin' ? 'admin@evcyberacademy.com' : 'kavitha.counselor@evcyberacademy.com';
-
-    const result = await signIn(targetEmail, 'password123');
-    setIsLoading(false);
-
-    if (result.success) {
-      success(`Logged in as ${role === 'admin' ? 'Super Admin' : 'Academic Counselor'}.`);
-      navigate('/admin');
-    } else {
-      setErrorMessage(result.error || 'Quick demo login failed.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background accents */}
@@ -76,34 +58,6 @@ export const LoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="bg-slate-900 py-8 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-800 space-y-6">
-          {/* Instant 1-Click Demo Login Box */}
-          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3 text-center">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-red-400 block">
-              1-Click Demo Evaluation Login
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('admin')}
-                disabled={isLoading}
-                className="py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                Super Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('staff')}
-                disabled={isLoading}
-                className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                Counselor Staff
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-500">
-              Instantly preview full CRM &amp; Admin functionality without setting up email servers.
-            </p>
-          </div>
-
           {errorMessage && (
             <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
@@ -111,7 +65,7 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Form */}
+          {/* Login Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
@@ -122,7 +76,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="admin@evcyberacademy.com"
+                  placeholder="name@evcyberacademy.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-red-600/30 focus:border-red-600"
@@ -181,4 +135,3 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
-

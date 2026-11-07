@@ -4,13 +4,12 @@ import {
   MessageCircle,
   Eye,
   Search,
-  Filter,
   Download,
   Calendar,
   Building,
-  GraduationCap,
+  Clock,
 } from 'lucide-react';
-import { Lead, LeadStatus } from '../../types';
+import { Lead } from '../../types';
 import { LeadStatusBadge } from './LeadStatusBadge';
 import { LeadDetailModal } from './LeadDetailModal';
 import { useData } from '../../context/DataContext';
@@ -55,15 +54,6 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
     return true;
   });
 
-  const statuses: (LeadStatus | 'all')[] = [
-    'all',
-    'New',
-    'Contacted',
-    'Interested',
-    'Converted',
-    'Not Interested',
-  ];
-
   return (
     <div className="space-y-4">
       {/* Filters & Export Bar */}
@@ -73,7 +63,7 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search leads by name, email, phone, reference..."
+            placeholder="Search leads by name, email, phone, reference, organization..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-600/10 focus:border-red-600"
@@ -134,7 +124,8 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
                 <th className="py-3 px-4">Experience</th>
                 <th className="py-3 px-4">Pipeline Status</th>
                 <th className="py-3 px-4">Counselor</th>
-                <th className="py-3 px-4">Date</th>
+                <th className="py-3 px-4">Follow-Up Date</th>
+                <th className="py-3 px-4">Registered</th>
                 <th className="py-3 px-4 text-right">Instant Actions</th>
               </tr>
             </thead>
@@ -204,7 +195,19 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
                         {lead.assigned_staff_name || 'Unassigned'}
                       </td>
 
-                      {/* Date */}
+                      {/* Follow-up date */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-[11px]">
+                        {lead.next_follow_up_date ? (
+                          <span className="flex items-center gap-1 text-slate-700 font-medium">
+                            <Clock className="w-3 h-3 text-red-500" />
+                            <span>{new Date(lead.next_follow_up_date).toLocaleDateString()}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">Not set</span>
+                        )}
+                      </td>
+
+                      {/* Registration Date */}
                       <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-slate-400">
                         {new Date(lead.created_at).toLocaleDateString()}
                       </td>
@@ -248,7 +251,7 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 font-normal">
+                  <td colSpan={9} className="py-12 text-center text-slate-400 font-normal">
                     No leads found matching your criteria.
                   </td>
                 </tr>
@@ -260,7 +263,7 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
         {/* Footer info */}
         <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
           <span>Showing {filteredLeads.length} of {leads.length} recorded leads</span>
-          <span className="text-[11px] text-slate-400">Real-time Supabase sync enabled</span>
+          <span className="text-[11px] text-slate-400">Authenticated staff access protected by Supabase RLS</span>
         </div>
       </div>
 
@@ -274,4 +277,3 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
     </div>
   );
 };
-

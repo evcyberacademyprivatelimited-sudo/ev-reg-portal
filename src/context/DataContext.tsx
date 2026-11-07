@@ -64,6 +64,7 @@ interface DataContextType {
     utm_content?: string;
   }) => Promise<{ success: boolean; lead?: Lead; isDuplicate?: boolean; error?: string }>;
   updateLeadStatus: (leadId: string, newStatus: LeadStatus, note?: string) => Promise<{ success: boolean; error?: string }>;
+  updateLeadFollowUp: (leadId: string, followUpDate: string) => Promise<{ success: boolean; error?: string }>;
   assignLead: (leadId: string, staffId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
   getLeadNotes: (leadId: string) => LeadNote[];
   addLeadNote: (leadId: string, noteText: string) => Promise<{ success: boolean; error?: string }>;
@@ -99,9 +100,11 @@ const STORAGE_SETTINGS = 'ev_settings_data';
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isSuperAdmin, staffList } = useAuth();
+  const isProductionDB = isSupabaseConfigured();
 
   // Courses state
   const [courses, setCourses] = useState<Course[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_COURSES);
       return stored ? JSON.parse(stored) : INITIAL_COURSES;
@@ -113,6 +116,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Videos state
   const [videos, setVideos] = useState<VideoItem[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_VIDEOS);
       return stored ? JSON.parse(stored) : INITIAL_VIDEOS;
@@ -121,8 +125,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Leads state
+  // Leads state - Strictly empty in production until retrieved from Supabase
   const [leads, setLeads] = useState<Lead[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_LEADS);
       return stored ? JSON.parse(stored) : INITIAL_LEADS;
@@ -132,54 +137,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
 
-  // Notes & History
+  // Notes & History - Strictly empty in production until retrieved from Supabase
   const [leadNotes, setLeadNotes] = useState<LeadNote[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_NOTES);
-      return stored ? JSON.parse(stored) : [
-        {
-          id: 'note-1',
-          lead_id: 'lead-1',
-          author_name: 'Kavitha R. (Lead Counselor)',
-          note: 'Profile evaluated. Solid computer network basics. Recommended Certified SOC Analyst L1/L2 cohort.',
-          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-        },
-        {
-          id: 'note-2',
-          lead_id: 'lead-2',
-          author_name: 'Rahul Sen (Admissions Advisor)',
-          note: 'Student interested in OSCP preparation. Scheduled a lab tour call for tomorrow 4 PM.',
-          created_at: new Date(Date.now() - 3600000 * 10).toISOString(),
-        }
-      ];
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
   });
 
   const [leadHistory, setLeadHistory] = useState<LeadStatusHistory[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_HISTORY);
-      return stored ? JSON.parse(stored) : [
-        {
-          id: 'hist-1',
-          lead_id: 'lead-2',
-          old_status: 'New',
-          new_status: 'Interested',
-          changed_by_name: 'Rahul Sen',
-          note: 'Follow-up call completed; candidate wants to join next batch.',
-          created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-        },
-        {
-          id: 'hist-2',
-          lead_id: 'lead-3',
-          old_status: 'New',
-          new_status: 'Contacted',
-          changed_by_name: 'Kavitha R.',
-          note: 'Sent syllabus PDF via WhatsApp.',
-          created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-        }
-      ];
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
@@ -187,6 +160,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Testimonials, FAQs, Settings
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_TESTIMONIALS);
       return stored ? JSON.parse(stored) : INITIAL_TESTIMONIALS;
@@ -196,6 +170,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [faqs, setFaqs] = useState<Faq[]>(() => {
+    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_FAQS);
       return stored ? JSON.parse(stored) : INITIAL_FAQS;
@@ -213,68 +188,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Sync state to localStorage for offline / test persistence
+  // Sync state to localStorage only when running locally without Supabase credentials
   useEffect(() => {
-    localStorage.setItem(STORAGE_COURSES, JSON.stringify(courses));
-  }, [courses]);
+    if (!isProductionDB) {
+      localStorage.setItem(STORAGE_COURSES, JSON.stringify(courses));
+      localStorage.setItem(STORAGE_VIDEOS, JSON.stringify(videos));
+      localStorage.setItem(STORAGE_LEADS, JSON.stringify(leads));
+      localStorage.setItem(STORAGE_NOTES, JSON.stringify(leadNotes));
+      localStorage.setItem(STORAGE_HISTORY, JSON.stringify(leadHistory));
+      localStorage.setItem(STORAGE_TESTIMONIALS, JSON.stringify(testimonials));
+      localStorage.setItem(STORAGE_FAQS, JSON.stringify(faqs));
+      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(siteSettings));
+    }
+  }, [isProductionDB, courses, videos, leads, leadNotes, leadHistory, testimonials, faqs, siteSettings]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_VIDEOS, JSON.stringify(videos));
-  }, [videos]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_LEADS, JSON.stringify(leads));
-  }, [leads]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_NOTES, JSON.stringify(leadNotes));
-  }, [leadNotes]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_HISTORY, JSON.stringify(leadHistory));
-  }, [leadHistory]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_TESTIMONIALS, JSON.stringify(testimonials));
-  }, [testimonials]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_FAQS, JSON.stringify(faqs));
-  }, [faqs]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(siteSettings));
-  }, [siteSettings]);
-
-  // Load from Supabase if connected
+  // Load and hydrate all data directly from Supabase
   const refreshData = useCallback(async () => {
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) {
+      // In local dev without credentials, initialize defaults if storage is empty
+      if (courses.length === 0) setCourses(INITIAL_COURSES);
+      if (videos.length === 0) setVideos(INITIAL_VIDEOS);
+      if (faqs.length === 0) setFaqs(INITIAL_FAQS);
+      return;
+    }
 
     try {
       setIsLoadingCourses(true);
       setIsLoadingLeads(true);
 
-      // Load Courses
+      // 1. Load Courses
       const { data: dbCourses, error: courseErr } = await supabase
         .from('courses')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!courseErr && dbCourses && dbCourses.length > 0) {
+      if (!courseErr && dbCourses) {
         setCourses(dbCourses as Course[]);
       }
 
-      // Load Videos
+      // 2. Load Videos
       const { data: dbVideos } = await supabase
         .from('videos')
         .select('*')
         .order('sort_order', { ascending: true });
 
-      if (dbVideos && dbVideos.length > 0) {
+      if (dbVideos) {
         setVideos(dbVideos as VideoItem[]);
       }
 
-      // Load Leads
+      // 3. Load Leads (authenticated staff/admins only by RLS)
       const { data: dbLeads } = await supabase
         .from('leads')
         .select('*')
@@ -284,24 +246,73 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLeads(dbLeads as Lead[]);
       }
 
-      // Load Testimonials
+      // 4. Load Lead Notes
+      const { data: dbNotes } = await supabase
+        .from('lead_notes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbNotes) {
+        setLeadNotes(dbNotes as LeadNote[]);
+      }
+
+      // 5. Load Lead History
+      const { data: dbHist } = await supabase
+        .from('lead_status_history')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbHist) {
+        setLeadHistory(dbHist as LeadStatusHistory[]);
+      }
+
+      // 6. Load Testimonials
       const { data: dbTestimonials } = await supabase
         .from('testimonials')
         .select('*')
         .order('sort_order', { ascending: true });
 
-      if (dbTestimonials && dbTestimonials.length > 0) {
+      if (dbTestimonials) {
         setTestimonials(dbTestimonials as Testimonial[]);
       }
 
-      // Load FAQs
+      // 7. Load FAQs
       const { data: dbFaqs } = await supabase
         .from('faqs')
         .select('*')
         .order('sort_order', { ascending: true });
 
-      if (dbFaqs && dbFaqs.length > 0) {
+      if (dbFaqs) {
         setFaqs(dbFaqs as Faq[]);
+      }
+
+      // 8. Load Site Settings
+      const { data: dbSettings } = await supabase
+        .from('site_settings')
+        .select('*');
+
+      if (dbSettings && dbSettings.length > 0) {
+        setSiteSettings((prev) => {
+          const updated = { ...prev };
+          dbSettings.forEach((row) => {
+            if (row.key === 'hero_content' && row.value) {
+              updated.hero_badge = row.value.badge || updated.hero_badge;
+              updated.hero_headline_prefix = row.value.headline_prefix || updated.hero_headline_prefix;
+              updated.hero_headline_highlight = row.value.headline_highlight || updated.hero_headline_highlight;
+              updated.hero_subheadline = row.value.subheadline || updated.hero_subheadline;
+              updated.primary_cta_text = row.value.primary_cta_text || updated.primary_cta_text;
+              updated.secondary_cta_text = row.value.secondary_cta_text || updated.secondary_cta_text;
+              updated.trust_badge_text = row.value.trust_badge_text || updated.trust_badge_text;
+            }
+            if (row.key === 'contact_info' && row.value) {
+              updated.contact_phone = row.value.phone || updated.contact_phone;
+              updated.contact_email = row.value.email || updated.contact_email;
+              updated.contact_whatsapp = row.value.whatsapp || updated.contact_whatsapp;
+              updated.counseling_hours = row.value.counseling_hours || updated.counseling_hours;
+            }
+          });
+          return updated;
+        });
       }
     } catch (err) {
       console.error('Error refreshing data from Supabase:', err);
@@ -309,7 +320,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingCourses(false);
       setIsLoadingLeads(false);
     }
-  }, []);
+  }, [courses.length, videos.length, faqs.length]);
 
   useEffect(() => {
     refreshData();
@@ -385,7 +396,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Local / Demo mode update
     if (isNew) {
       setCourses((prev) => [preparedCourse, ...prev]);
     } else {
@@ -429,7 +439,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const preparedVideo: VideoItem = {
       id: videoData.id || 'vid_' + Math.random().toString(36).substring(2, 10),
-      title: videoData.title || 'Featured Cybersecurity Walkthrough',
+      title: videoData.title || 'Cyber Range Walkthrough',
       description: videoData.description || '',
       youtube_url: videoData.youtube_url || `https://www.youtube.com/watch?v=${videoId}`,
       youtube_video_id: videoId,
@@ -469,7 +479,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Local / Demo mode
     if (isNew) {
       setVideos((prev) => [...prev, preparedVideo]);
     } else {
@@ -491,42 +500,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
-  // Duplicate Check
+  // Secure Duplicate Registration Check
   const checkDuplicateLead = async (email: string, courseId: string): Promise<DuplicateCheckResult> => {
     const cleanEmail = email.trim().toLowerCase();
-    
-    // Check locally first
-    const match = leads.find(
-      (l) => l.email.toLowerCase() === cleanEmail && l.course_id === courseId
-    );
 
-    if (match) {
-      return {
-        isDuplicate: true,
-        existingLead: match,
-        message: `An application from ${email} for this course is already on file (Lead Reference: ${match.lead_number}). Our admissions counselor is actively reviewing your file.`,
-      };
-    }
-
+    // In Supabase mode, execute the secure RPC function (SECURITY DEFINER)
+    // This returns boolean true/false and strictly NEVER exposes student registrations to public callers
     if (isSupabaseConfigured()) {
       try {
-        const { data } = await supabase
-          .from('leads')
-          .select('*')
-          .eq('email', cleanEmail)
-          .eq('course_id', courseId)
-          .limit(1);
+        const { data: isDup, error } = await supabase.rpc('check_duplicate_registration', {
+          p_email: cleanEmail,
+          p_course_id: courseId,
+        });
 
-        if (data && data.length > 0) {
-          const found = data[0] as Lead;
+        if (!error && isDup === true) {
           return {
             isDuplicate: true,
-            existingLead: found,
-            message: `An application from ${email} for this course is already registered (Lead Ref: ${found.lead_number}). A counselor will contact you shortly.`,
+            message: `An application from ${email} for this program is already registered in our admissions system. A counselor will review your file.`,
           };
         }
       } catch (err) {
-        console.error('Duplicate check error:', err);
+        console.error('Secure duplicate check error:', err);
+      }
+    } else {
+      // Local check
+      const match = leads.find(
+        (l) => l.email.toLowerCase() === cleanEmail && l.course_id === courseId
+      );
+
+      if (match) {
+        return {
+          isDuplicate: true,
+          existingLead: match,
+          message: `An application from ${email} for this course is already on file (Lead Ref: ${match.lead_number}). Our admissions counselor is actively reviewing your file.`,
+        };
       }
     }
 
@@ -563,7 +570,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = new Date().toISOString();
     const nextLeadNum = 'EV-' + (1000 + leads.length + 1);
 
-    // Auto-assign to staff member (round-robin or default lead counselor)
+    // Auto-assign to staff member if available
     const availableStaff = staffList.length > 0 ? staffList[0] : null;
 
     const newLead: Lead = {
@@ -640,10 +647,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Local / Demo mode
+    // Local sandbox
     setLeads((prev) => [newLead, ...prev]);
 
-    // Initial status history entry
     const historyItem: LeadStatusHistory = {
       id: 'hist_' + Math.random().toString(36).substring(2, 9),
       lead_id: newLead.id,
@@ -655,7 +661,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setLeadHistory((prev) => [historyItem, ...prev]);
 
-    // Track analytics event
     await trackEvent('lead_submission', newLead.course_id, {
       lead_number: newLead.lead_number,
       experience_level: newLead.experience_level,
@@ -689,7 +694,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (error) return { success: false, error: error.message };
 
-        // Log status history
         await supabase.from('lead_status_history').insert([
           {
             lead_id: leadId,
@@ -729,6 +733,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: now,
     };
     setLeadHistory((prev) => [historyItem, ...prev]);
+
+    return { success: true };
+  };
+
+  // Follow-up Date Update
+  const updateLeadFollowUp = async (
+    leadId: string,
+    followUpDate: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const now = new Date().toISOString();
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase
+          .from('leads')
+          .update({
+            next_follow_up_date: followUpDate,
+            updated_at: now,
+          })
+          .eq('id', leadId);
+
+        if (error) return { success: false, error: error.message };
+      } catch (err) {
+        return { success: false, error: (err as Error).message };
+      }
+    }
+
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.id === leadId
+          ? {
+              ...l,
+              next_follow_up_date: followUpDate,
+              updated_at: now,
+            }
+          : l
+      )
+    );
 
     return { success: true };
   };
@@ -877,6 +919,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'Experience Level',
       'Status',
       'Assigned Counselor',
+      'Next Follow-Up Date',
       'Referral Source',
       'UTM Source',
       'UTM Medium',
@@ -896,6 +939,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         `"${l.experience_level}"`,
         `"${l.status}"`,
         `"${l.assigned_staff_name || 'Unassigned'}"`,
+        `"${l.next_follow_up_date || ''}"`,
         `"${l.referral_source || ''}"`,
         `"${l.utm_source || ''}"`,
         `"${l.utm_medium || ''}"`,
@@ -926,8 +970,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       try {
         await supabase.from('site_settings').upsert({
-          key: 'site_config',
-          value: updated,
+          key: 'hero_content',
+          value: {
+            badge: updated.hero_badge,
+            headline_prefix: updated.hero_headline_prefix,
+            headline_highlight: updated.hero_headline_highlight,
+            subheadline: updated.hero_subheadline,
+            primary_cta_text: updated.primary_cta_text,
+            secondary_cta_text: updated.secondary_cta_text,
+            trust_badge_text: updated.trust_badge_text,
+          },
+          updated_at: new Date().toISOString(),
+        });
+
+        await supabase.from('site_settings').upsert({
+          key: 'contact_info',
+          value: {
+            phone: updated.contact_phone,
+            email: updated.contact_email,
+            whatsapp: updated.contact_whatsapp,
+            counseling_hours: updated.counseling_hours,
+          },
           updated_at: new Date().toISOString(),
         });
       } catch (err) {
@@ -951,6 +1014,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: faqData.created_at || new Date().toISOString(),
     };
 
+    if (isSupabaseConfigured()) {
+      try {
+        if (isNew) {
+          await supabase.from('faqs').insert([item]);
+        } else {
+          await supabase.from('faqs').update(item).eq('id', item.id);
+        }
+      } catch (err) {
+        console.error('Failed saving FAQ to Supabase:', err);
+      }
+    }
+
     if (isNew) {
       setFaqs((prev) => [...prev, item]);
     } else {
@@ -960,6 +1035,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteFaq = async (id: string): Promise<{ success: boolean }> => {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('faqs').delete().eq('id', id);
+      } catch (err) {
+        console.error('Failed deleting FAQ from Supabase:', err);
+      }
+    }
     setFaqs((prev) => prev.filter((f) => f.id !== id));
     return { success: true };
   };
@@ -971,13 +1053,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: testData.name || '',
       role: testData.role || '',
       company: testData.company || '',
-      avatar_url: testData.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+      avatar_url: testData.avatar_url || '',
       content: testData.content || '',
       rating: testData.rating || 5,
       is_featured: testData.is_featured !== undefined ? testData.is_featured : true,
       sort_order: testData.sort_order ?? testimonials.length + 1,
       created_at: testData.created_at || new Date().toISOString(),
     };
+
+    if (isSupabaseConfigured()) {
+      try {
+        if (isNew) {
+          await supabase.from('testimonials').insert([item]);
+        } else {
+          await supabase.from('testimonials').update(item).eq('id', item.id);
+        }
+      } catch (err) {
+        console.error('Failed saving testimonial to Supabase:', err);
+      }
+    }
 
     if (isNew) {
       setTestimonials((prev) => [...prev, item]);
@@ -988,6 +1082,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteTestimonial = async (id: string): Promise<{ success: boolean }> => {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('testimonials').delete().eq('id', id);
+      } catch (err) {
+        console.error('Failed deleting testimonial from Supabase:', err);
+      }
+    }
     setTestimonials((prev) => prev.filter((t) => t.id !== id));
     return { success: true };
   };
@@ -1009,6 +1110,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkDuplicateLead,
     submitRegistration,
     updateLeadStatus,
+    updateLeadFollowUp,
     assignLead,
     getLeadNotes,
     addLeadNote,
@@ -1036,4 +1138,3 @@ export const useData = (): DataContextType => {
   }
   return context;
 };
-

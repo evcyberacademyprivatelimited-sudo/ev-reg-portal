@@ -357,3 +357,21 @@ CREATE POLICY "Staff view analytics" ON public.analytics_events
     FOR SELECT TO authenticated
     USING (public.is_staff());
 
+
+
+-- ==============================================================================
+-- SECURE RPC FOR ANTI-DUPLICATE CHECK WITHOUT EXPOSING STUDENT DATA
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION public.check_duplicate_registration(p_email TEXT, p_course_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.leads
+        WHERE lower(trim(email)) = lower(trim(p_email))
+          AND course_id = p_course_id
+          AND created_at >= (NOW() - INTERVAL '30 days')
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.check_duplicate_registration(TEXT, UUID) TO anon, authenticated;
