@@ -587,3 +587,4 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
     </div>
   );
 };
+

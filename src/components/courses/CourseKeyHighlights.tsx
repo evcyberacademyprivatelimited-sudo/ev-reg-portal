@@ -80,3 +80,4 @@ export const CourseKeyHighlights: React.FC<CourseKeyHighlightsProps> = ({ course
     </div>
   );
 };
+

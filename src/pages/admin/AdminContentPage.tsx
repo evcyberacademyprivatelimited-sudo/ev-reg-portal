@@ -345,3 +345,4 @@ export const AdminContentPage: React.FC = () => {
     </div>
   );
 };
+

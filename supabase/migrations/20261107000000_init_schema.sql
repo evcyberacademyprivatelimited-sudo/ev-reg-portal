@@ -356,3 +356,4 @@ CREATE POLICY "Public insert analytics" ON public.analytics_events
 CREATE POLICY "Staff view analytics" ON public.analytics_events
     FOR SELECT TO authenticated
     USING (public.is_staff());
+

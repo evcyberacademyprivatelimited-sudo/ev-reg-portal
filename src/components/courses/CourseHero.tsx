@@ -202,3 +202,4 @@ export const CourseHero: React.FC<CourseHeroProps> = ({ course, video }) => {
     </section>
   );
 };
+

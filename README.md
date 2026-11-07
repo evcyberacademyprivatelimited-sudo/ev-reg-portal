@@ -205,3 +205,4 @@ npm run preview
 ## ⚖️ License & Ethical Standard
 
 All materials and cyber ranges are designed exclusively for defensive engineering, authorized adversary emulation, and educational preparation. EV Cyber Academy maintains zero tolerance for unauthorized testing or malicious use.
+

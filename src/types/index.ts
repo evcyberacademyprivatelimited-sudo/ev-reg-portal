@@ -196,3 +196,4 @@ export interface SiteSettings {
   contact_whatsapp: string;
   counseling_hours: string;
 }
+

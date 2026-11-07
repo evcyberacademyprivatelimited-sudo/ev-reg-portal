@@ -75,3 +75,4 @@ export function captureUtmParams(): UtmParams {
 export function getStoredUtmParams(): UtmParams {
   return captureUtmParams();
 }
+

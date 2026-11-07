@@ -33,3 +33,4 @@ export const AdminLeadsPage: React.FC = () => {
     </div>
   );
 };
+

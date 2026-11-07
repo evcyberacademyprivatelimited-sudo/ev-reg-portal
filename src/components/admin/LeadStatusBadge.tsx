@@ -36,3 +36,4 @@ export const LeadStatusBadge: React.FC<LeadStatusBadgeProps> = ({ status, size =
     </span>
   );
 };
+

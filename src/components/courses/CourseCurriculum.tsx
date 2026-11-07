@@ -90,3 +90,4 @@ export const CourseCurriculum: React.FC<CourseCurriculumProps> = ({ syllabus }) 
     </div>
   );
 };
+

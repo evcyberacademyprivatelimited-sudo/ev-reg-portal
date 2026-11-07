@@ -655,3 +655,4 @@ export const INITIAL_LEADS: Lead[] = [
     updated_at: new Date(Date.now() - 3600000 * 20).toISOString(),
   },
 ];
+

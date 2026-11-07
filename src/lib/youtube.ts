@@ -92,3 +92,4 @@ export function getYouTubeThumbnailUrl(
   if (!videoId) return '';
   return `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
 }
+

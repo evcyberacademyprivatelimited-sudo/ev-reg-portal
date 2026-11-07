@@ -139,3 +139,4 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, featured = false
     </div>
   );
 };
+

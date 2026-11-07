@@ -37,3 +37,4 @@ if (isSupabaseConfigured()) {
 }
 
 export const supabase = client;
+

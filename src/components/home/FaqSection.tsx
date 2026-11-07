@@ -82,3 +82,4 @@ export const FaqSection: React.FC = () => {
     </section>
   );
 };
+

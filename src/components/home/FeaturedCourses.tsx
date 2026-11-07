@@ -88,3 +88,4 @@ export const FeaturedCourses: React.FC = () => {
     </section>
   );
 };
+

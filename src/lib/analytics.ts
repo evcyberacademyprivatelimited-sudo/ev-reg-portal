@@ -63,3 +63,4 @@ export function getLocalAnalyticsEvents(): AnalyticsEvent[] {
     return [];
   }
 }
+

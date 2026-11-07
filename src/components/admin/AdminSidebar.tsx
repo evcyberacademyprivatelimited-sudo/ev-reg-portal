@@ -106,3 +106,4 @@ export const AdminSidebar: React.FC<{ onCloseMobile?: () => void }> = ({ onClose
     </aside>
   );
 };
+

@@ -274,3 +274,4 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
     </div>
   );
 };
+

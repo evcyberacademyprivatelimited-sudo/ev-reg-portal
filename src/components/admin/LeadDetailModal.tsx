@@ -438,3 +438,4 @@ export const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose 
     </div>
   );
 };
+

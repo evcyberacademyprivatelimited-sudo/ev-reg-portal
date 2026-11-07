@@ -111,3 +111,4 @@ export const AcademyIntro: React.FC = () => {
     </section>
   );
 };
+
