@@ -161,7 +161,8 @@ INSERT INTO public.courses (
         "Basic computer literacy and a hunger to learn defensive tech"
     ]'::jsonb,
     '["Linux (Ubuntu)", "Nmap", "Nessus", "Wireshark", "VirtualBox", "OpenSSL", "OWASP ZAP", "Hashcat basics"]'::jsonb
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- 2. VIDEOS SEED (Admin-Controlled YouTube Management)
 INSERT INTO public.videos (
@@ -170,7 +171,7 @@ INSERT INTO public.videos (
     autoplay, muted_autoplay, show_controls, sort_order
 ) VALUES
 (
-    'v1111111-1111-1111-1111-111111111111',
+    '11111111-1111-1111-1111-111111111111',
     'Inside the EV Cyber War Room: Live Cyber Range Walkthrough',
     'A walkthrough of our live-fire cyber range, real-time intrusion simulations, and practical training methodology.',
     'https://www.youtube.com/watch?v=inWWhr5tnEA',
@@ -185,7 +186,7 @@ INSERT INTO public.videos (
     1
 ),
 (
-    'v2222222-2222-2222-2222-222222222222',
+    '22222222-2222-2222-2222-222222222222',
     'SOC Analyst L1/L2 Program Overview & Lab Architecture',
     'Detailed overview of the 12-week Certified SOC Analyst syllabus, live SIEM lab environment, and triage exercises.',
     'https://www.youtube.com/watch?v=3Kq1MIfTWCE',
@@ -200,7 +201,7 @@ INSERT INTO public.videos (
     2
 ),
 (
-    'v3333333-3333-3333-3333-333333333333',
+    '33333333-3333-3333-3333-333333333333',
     'Offensive Red Team Track: Active Directory Exploitation Preview',
     'Demonstration of modern Kerberos ticket forging and defensive evasion tactics covered in our 16-week Offensive Security Track.',
     'https://www.youtube.com/watch?v=2ePf9rue1Ao',
@@ -213,7 +214,8 @@ INSERT INTO public.videos (
     TRUE,
     TRUE,
     3
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- 3. FAQS SEED
 INSERT INTO public.faqs (category, question, answer, sort_order, is_active) VALUES

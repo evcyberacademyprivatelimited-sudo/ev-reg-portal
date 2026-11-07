@@ -387,7 +387,7 @@ export const INITIAL_COURSES: Course[] = [
 
 export const INITIAL_VIDEOS: VideoItem[] = [
   {
-    id: 'v1111111-1111-1111-1111-111111111111',
+    id: '11111111-1111-1111-1111-111111111111',
     title: 'Inside the EV Cyber War Room: Live Cyber Range Walkthrough',
     description: 'A walkthrough of our live-fire cyber range, real-time intrusion simulations, and practical training methodology.',
     youtube_url: 'https://www.youtube.com/watch?v=inWWhr5tnEA',
@@ -404,7 +404,7 @@ export const INITIAL_VIDEOS: VideoItem[] = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: 'v2222222-2222-2222-2222-222222222222',
+    id: '22222222-2222-2222-2222-222222222222',
     title: 'SOC Analyst L1/L2 Program Overview & Lab Architecture',
     description: 'Detailed overview of the 12-week Certified SOC Analyst syllabus, live SIEM lab environment, and triage exercises.',
     youtube_url: 'https://www.youtube.com/watch?v=3Kq1MIfTWCE',
@@ -421,7 +421,7 @@ export const INITIAL_VIDEOS: VideoItem[] = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: 'v3333333-3333-3333-3333-333333333333',
+    id: '33333333-3333-3333-3333-333333333333',
     title: 'Offensive Red Team Track: Active Directory Exploitation Preview',
     description: 'Demonstration of modern Kerberos ticket forging and defensive evasion tactics covered in our 16-week Offensive Security Track.',
     youtube_url: 'https://www.youtube.com/watch?v=2ePf9rue1Ao',
