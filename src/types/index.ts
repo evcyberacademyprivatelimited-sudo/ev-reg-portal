@@ -47,6 +47,7 @@ export interface Course {
   status: CourseStatus;
   featured: boolean;
   badge_text?: string;
+  sort_order?: number;
   certification_title: string;
   batch_start_date?: string;
   seats_remaining?: number;

@@ -14,11 +14,13 @@ import {
   EyeOff,
   Clock,
   Laptop,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 export const AdminCoursesPage: React.FC = () => {
   const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
-  const { courses, saveCourse, deleteCourse } = useData();
+  const { courses, saveCourse, deleteCourse, updateCourseOrder } = useData();
   const { success, error: notifyError } = useNotification();
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -32,6 +34,15 @@ export const AdminCoursesPage: React.FC = () => {
   const handleEdit = (course: Course) => {
     setEditingCourse(course);
     setIsEditorOpen(true);
+  };
+
+  const handleOrderChange = async (courseId: string, newPosition: number) => {
+    const res = await updateCourseOrder(courseId, newPosition);
+    if (res.success) {
+      success(`Course moved to position #${newPosition}.`);
+    } else {
+      notifyError('Failed to update course order', res.error);
+    }
   };
 
   const handleToggleStatus = async (course: Course) => {
@@ -89,6 +100,7 @@ export const AdminCoursesPage: React.FC = () => {
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                    <th className="py-3.5 px-4 w-44">Display Order</th>
                     <th className="py-3.5 px-4">Course Name</th>
                     <th className="py-3.5 px-4">Duration</th>
                     <th className="py-3.5 px-4">Learning Mode</th>
@@ -104,6 +116,44 @@ export const AdminCoursesPage: React.FC = () => {
 
                     return (
                       <tr key={course.id} className="hover:bg-slate-50/80 transition">
+                        {/* Display Order Controls */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <select
+                              value={course.sort_order || 1}
+                              onChange={(e) => handleOrderChange(course.id, Number(e.target.value))}
+                              className="px-2.5 py-1 text-xs font-black text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 cursor-pointer"
+                              title="Select which card displays 1st, 2nd, 3rd, etc."
+                            >
+                              {courses.map((_, idx) => (
+                                <option key={idx + 1} value={idx + 1}>
+                                  Card #{idx + 1} {idx === 0 ? '(1st)' : idx === 1 ? '(2nd)' : idx === 2 ? '(3rd)' : ''}
+                                </option>
+                              ))}
+                            </select>
+
+                            <button
+                              type="button"
+                              disabled={(course.sort_order || 1) <= 1}
+                              onClick={() => handleOrderChange(course.id, (course.sort_order || 1) - 1)}
+                              className="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={(course.sort_order || 1) >= courses.length}
+                              onClick={() => handleOrderChange(course.id, (course.sort_order || 1) + 1)}
+                              className="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+
                         <td className="py-4 px-4 font-bold text-slate-900 max-w-sm">
                           <div>
                             <span className="text-sm font-bold text-slate-900">{course.title}</span>

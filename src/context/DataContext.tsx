@@ -48,6 +48,7 @@ interface DataContextType {
   getCourseById: (id: string) => Course | undefined;
   saveCourse: (course: Partial<Course>) => Promise<{ success: boolean; data?: Course; error?: string }>;
   deleteCourse: (id: string) => Promise<{ success: boolean; error?: string }>;
+  updateCourseOrder: (courseId: string, newPosition: number) => Promise<{ success: boolean; error?: string }>;
 
   // Videos
   videos: VideoItem[];
@@ -227,14 +228,63 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingCourses(true);
       setIsLoadingLeads(true);
 
-      // 1. Load Courses
+      // Load Site Settings & Course Display Order first
+      let orderMap: Record<string, number> = {};
+      const { data: dbSettings } = await supabase.from('site_settings').select('*');
+
+      if (dbSettings && dbSettings.length > 0) {
+        setSiteSettings((prev) => {
+          const updated = { ...prev };
+          dbSettings.forEach((row) => {
+            if (row.key === 'course_display_order' && row.value) {
+              orderMap = (row.value.order || row.value) as Record<string, number>;
+            }
+            if (row.key === 'hero_content' && row.value) {
+              updated.hero_badge = row.value.badge || updated.hero_badge;
+              updated.hero_headline_prefix = row.value.headline_prefix || updated.hero_headline_prefix;
+              updated.hero_headline_highlight = row.value.headline_highlight || updated.hero_headline_highlight;
+              updated.hero_subheadline = row.value.subheadline || updated.hero_subheadline;
+              updated.primary_cta_text = row.value.primary_cta_text || updated.primary_cta_text;
+              updated.secondary_cta_text = row.value.secondary_cta_text || updated.secondary_cta_text;
+              updated.trust_badge_text = row.value.trust_badge_text || updated.trust_badge_text;
+            }
+            if (row.key === 'contact_info' && row.value) {
+              updated.contact_phone = row.value.phone || updated.contact_phone;
+              updated.contact_email = row.value.email || updated.contact_email;
+              updated.contact_whatsapp = row.value.whatsapp || updated.contact_whatsapp;
+              updated.counseling_hours = row.value.counseling_hours || updated.counseling_hours;
+            }
+            if (row.key === 'quick_apply_buttons' && row.value) {
+              updated.quick_btn1_text = row.value.btn1_text || updated.quick_btn1_text;
+              updated.quick_btn1_course_id = row.value.btn1_course_id || updated.quick_btn1_course_id;
+              updated.quick_btn1_course_name = row.value.btn1_course_name || updated.quick_btn1_course_name;
+              updated.quick_btn1_enabled = row.value.btn1_enabled !== undefined ? row.value.btn1_enabled : updated.quick_btn1_enabled;
+              updated.quick_btn2_text = row.value.btn2_text || updated.quick_btn2_text;
+              updated.quick_btn2_course_id = row.value.btn2_course_id || updated.quick_btn2_course_id;
+              updated.quick_btn2_course_name = row.value.btn2_course_name || updated.quick_btn2_course_name;
+              updated.quick_btn2_enabled = row.value.btn2_enabled !== undefined ? row.value.btn2_enabled : updated.quick_btn2_enabled;
+            }
+            if (row.key === 'course_card_settings' && row.value) {
+              updated.default_card_banner_text = row.value.banner_text || updated.default_card_banner_text;
+            }
+          });
+          return updated;
+        });
+      }
+
+      // 1. Load Courses & Apply Display Order
       const { data: dbCourses, error: courseErr } = await supabase
         .from('courses')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (!courseErr && dbCourses) {
-        setCourses(dbCourses as Course[]);
+        const sorted = (dbCourses as Course[])
+          .map((c, idx) => ({
+            ...c,
+            sort_order: orderMap[c.id] !== undefined ? Number(orderMap[c.id]) : (idx + 1),
+          }))
+          .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+        setCourses(sorted);
       }
 
       // 2. Load Videos
@@ -297,47 +347,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setFaqs(dbFaqs as Faq[]);
       }
 
-      // 8. Load Site Settings
-      const { data: dbSettings } = await supabase
-        .from('site_settings')
-        .select('*');
-
-      if (dbSettings && dbSettings.length > 0) {
-        setSiteSettings((prev) => {
-          const updated = { ...prev };
-          dbSettings.forEach((row) => {
-            if (row.key === 'hero_content' && row.value) {
-              updated.hero_badge = row.value.badge || updated.hero_badge;
-              updated.hero_headline_prefix = row.value.headline_prefix || updated.hero_headline_prefix;
-              updated.hero_headline_highlight = row.value.headline_highlight || updated.hero_headline_highlight;
-              updated.hero_subheadline = row.value.subheadline || updated.hero_subheadline;
-              updated.primary_cta_text = row.value.primary_cta_text || updated.primary_cta_text;
-              updated.secondary_cta_text = row.value.secondary_cta_text || updated.secondary_cta_text;
-              updated.trust_badge_text = row.value.trust_badge_text || updated.trust_badge_text;
-            }
-            if (row.key === 'contact_info' && row.value) {
-              updated.contact_phone = row.value.phone || updated.contact_phone;
-              updated.contact_email = row.value.email || updated.contact_email;
-              updated.contact_whatsapp = row.value.whatsapp || updated.contact_whatsapp;
-              updated.counseling_hours = row.value.counseling_hours || updated.counseling_hours;
-            }
-            if (row.key === 'quick_apply_buttons' && row.value) {
-              updated.quick_btn1_text = row.value.btn1_text || updated.quick_btn1_text;
-              updated.quick_btn1_course_id = row.value.btn1_course_id || updated.quick_btn1_course_id;
-              updated.quick_btn1_course_name = row.value.btn1_course_name || updated.quick_btn1_course_name;
-              updated.quick_btn1_enabled = row.value.btn1_enabled !== undefined ? row.value.btn1_enabled : updated.quick_btn1_enabled;
-              updated.quick_btn2_text = row.value.btn2_text || updated.quick_btn2_text;
-              updated.quick_btn2_course_id = row.value.btn2_course_id || updated.quick_btn2_course_id;
-              updated.quick_btn2_course_name = row.value.btn2_course_name || updated.quick_btn2_course_name;
-              updated.quick_btn2_enabled = row.value.btn2_enabled !== undefined ? row.value.btn2_enabled : updated.quick_btn2_enabled;
-            }
-            if (row.key === 'course_card_settings' && row.value) {
-              updated.default_card_banner_text = row.value.banner_text || updated.default_card_banner_text;
-            }
-          });
-          return updated;
-        });
-      }
     } catch (err) {
       console.error('Error refreshing data from Supabase:', err);
     } finally {
@@ -363,6 +372,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isNew = !courseData.id;
     const now = new Date().toISOString();
 
+    const targetSortOrder = courseData.sort_order;
+    const currentCourse = courses.find((c) => c.id === courseData.id);
+
     const preparedCourse: Course = {
       id: courseData.id || generateUuid(),
       slug:
@@ -385,6 +397,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       status: courseData.status || 'published',
       featured: Boolean(courseData.featured),
       badge_text: courseData.badge_text || '',
+      sort_order:
+        targetSortOrder !== undefined
+          ? Number(targetSortOrder)
+          : (currentCourse?.sort_order || courses.length + 1),
       certification_title: courseData.certification_title || 'EV Cyber Professional Certificate',
       batch_start_date: courseData.batch_start_date,
       seats_remaining: courseData.seats_remaining ?? 20,
@@ -398,26 +414,50 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (isSupabaseConfigured()) {
       try {
+        if (targetSortOrder !== undefined) {
+          const currentOrderMap: Record<string, number> = {};
+          courses.forEach((c) => {
+            currentOrderMap[c.id] = c.sort_order ?? 999;
+          });
+          currentOrderMap[preparedCourse.id] = Number(targetSortOrder);
+
+          await supabase.from('site_settings').upsert({
+            key: 'course_display_order',
+            value: { order: currentOrderMap },
+            updated_at: new Date().toISOString(),
+          });
+        }
+
         if (isNew) {
-          // Omit id so PostgreSQL automatically assigns default uuid_generate_v4()
-          const { id: _omitId, ...insertPayload } = preparedCourse;
+          // Omit id and sort_order so PostgreSQL automatically assigns default uuid_generate_v4() and avoids column errors
+          const { id: _omitId, sort_order: _omitSortOrder, ...insertPayload } = preparedCourse;
           const { data, error } = await supabase.from('courses').insert([insertPayload]).select().single();
           if (error) return { success: false, error: error.message };
           if (data) {
-            setCourses((prev) => [data as Course, ...prev]);
-            return { success: true, data: data as Course };
+            const courseWithOrder = { ...data, sort_order: preparedCourse.sort_order } as Course;
+            setCourses((prev) => {
+              const updated = [courseWithOrder, ...prev.filter((c) => c.id !== courseWithOrder.id)];
+              return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+            });
+            return { success: true, data: courseWithOrder };
           }
         } else {
+          // Omit sort_order from update payload for PostgreSQL
+          const { sort_order: _omitSortOrder, ...updatePayload } = preparedCourse;
           const { data, error } = await supabase
             .from('courses')
-            .update(preparedCourse)
+            .update(updatePayload)
             .eq('id', preparedCourse.id)
             .select()
             .single();
           if (error) return { success: false, error: error.message };
           if (data) {
-            setCourses((prev) => prev.map((c) => (c.id === data.id ? (data as Course) : c)));
-            return { success: true, data: data as Course };
+            const updatedCourse = { ...data, sort_order: preparedCourse.sort_order } as Course;
+            setCourses((prev) => {
+              const updated = prev.map((c) => (c.id === data.id ? updatedCourse : c));
+              return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+            });
+            return { success: true, data: updatedCourse };
           }
         }
         return { success: true, data: preparedCourse };
@@ -427,11 +467,53 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (isNew) {
-      setCourses((prev) => [preparedCourse, ...prev]);
+      setCourses((prev) => {
+        const updated = [preparedCourse, ...prev];
+        return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+      });
     } else {
-      setCourses((prev) => prev.map((c) => (c.id === preparedCourse.id ? preparedCourse : c)));
+      setCourses((prev) => {
+        const updated = prev.map((c) => (c.id === preparedCourse.id ? preparedCourse : c));
+        return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+      });
     }
     return { success: true, data: preparedCourse };
+  };
+
+  const updateCourseOrder = async (
+    courseId: string,
+    newPosition: number
+  ): Promise<{ success: boolean; error?: string }> => {
+    const currentList = [...courses].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+    const targetCourse = currentList.find((c) => c.id === courseId);
+    if (!targetCourse) return { success: false, error: 'Course not found' };
+
+    const remaining = currentList.filter((c) => c.id !== courseId);
+    const clampedIndex = Math.max(0, Math.min(newPosition - 1, remaining.length));
+    remaining.splice(clampedIndex, 0, targetCourse);
+
+    const updatedOrderMap: Record<string, number> = {};
+    const updatedList = remaining.map((c, idx) => {
+      const order = idx + 1;
+      updatedOrderMap[c.id] = order;
+      return { ...c, sort_order: order };
+    });
+
+    setCourses(updatedList);
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('site_settings').upsert({
+          key: 'course_display_order',
+          value: { order: updatedOrderMap },
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error('Failed saving course order to Supabase:', err);
+      }
+    }
+
+    return { success: true };
   };
 
   const deleteCourse = async (id: string): Promise<{ success: boolean; error?: string }> => {
@@ -1162,6 +1244,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getCourseById,
     saveCourse,
     deleteCourse,
+    updateCourseOrder,
     videos,
     getHeroVideo,
     getCourseVideo,

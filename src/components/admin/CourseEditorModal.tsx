@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal } from 'lucide-react';
+import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered } from 'lucide-react';
 import { Course, CourseStatus } from '../../types';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -10,7 +10,7 @@ interface CourseEditorModalProps {
 }
 
 export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, onClose }) => {
-  const { saveCourse } = useData();
+  const { saveCourse, courses } = useData();
   const { success, error: notifyError } = useNotification();
 
   const isEditing = Boolean(course?.id);
@@ -22,12 +22,14 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
   // - Learning Mode
   // - Course Image
   // - Hacker Banner Text
+  // - Display Order (1, 2, 3...)
   // - Publish / Hide Course
   const [courseName, setCourseName] = useState(course?.title || '');
   const [shortDescription, setShortDescription] = useState(course?.summary || '');
   const [durationWeeks, setDurationWeeks] = useState(course?.duration_weeks || 12);
   const [learningMode, setLearningMode] = useState(course?.learning_mode || course?.tagline || 'Live Online');
   const [bannerText, setBannerText] = useState(course?.badge_text || 'Professional Certification Track');
+  const [sortOrder, setSortOrder] = useState<number>(course?.sort_order || courses.length + 1);
   const [courseImage, setCourseImage] = useState(course?.image_url || '');
   const [isPublished, setIsPublished] = useState(course?.status !== 'draft');
 
@@ -54,6 +56,7 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
       tagline: learningMode.trim(),
       learning_mode: learningMode.trim(),
       badge_text: bannerText.trim() || 'Professional Certification Track',
+      sort_order: Number(sortOrder) || 1,
       duration_weeks: Number(durationWeeks) || 12,
       hours_per_week: course?.hours_per_week || 8,
       level: course?.level || 'Intermediate',
@@ -222,7 +225,41 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
             </p>
           </div>
 
-          {/* 7. Publish / Hide Course Toggle */}
+          {/* 7. Display Order / Card Position (1, 2, 3...) */}
+          <div>
+            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Display Position on Website (1, 2, 3...)
+            </label>
+            <div className="relative">
+              <ListOrdered className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(Number(e.target.value))}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-xs bg-white"
+              >
+                {Array.from(
+                  { length: Math.max(courses.length + (isEditing ? 0 : 1), 6) },
+                  (_, i) => i + 1
+                ).map((pos) => (
+                  <option key={pos} value={pos}>
+                    Position #{pos}{' '}
+                    {pos === 1
+                      ? '(1st Card on Website)'
+                      : pos === 2
+                      ? '(2nd Card)'
+                      : pos === 3
+                      ? '(3rd Card)'
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Controls whether this course appears 1st, 2nd, 3rd, etc. on the website.
+            </p>
+          </div>
+
+          {/* 8. Publish / Hide Course Toggle */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <div>
               <p className="font-bold text-slate-900">Website Publication</p>

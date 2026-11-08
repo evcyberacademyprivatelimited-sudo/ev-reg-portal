@@ -132,9 +132,12 @@ export const HomePage: React.FC = () => {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Get active courses
+  // Get active courses sorted strictly by admin display order (1, 2, 3...)
   const publishedCourses = courses.filter((c) => c.status === 'published');
-  const displayCourses = publishedCourses.length > 0 ? publishedCourses : courses;
+  const baseCourses = publishedCourses.length > 0 ? publishedCourses : courses;
+  const displayCourses = [...baseCourses].sort(
+    (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)
+  );
 
   // Get introduction / promotional video
   const heroVideo = getHeroVideo() || (videos.length > 0 ? videos[0] : null);
