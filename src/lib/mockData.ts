@@ -383,6 +383,38 @@ export const INITIAL_COURSES: Course[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
+  {
+    id: 'e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9012',
+    slug: '14-days-ethical-hacking-program',
+    title: '14-Day Ethical Hacking Program',
+    tagline: '14 Days Intensive Ethical Hacking & Hands-on Cyber Training',
+    summary: 'A fast-paced, practical 14-day crash program covering cybersecurity fundamentals, network reconnaissance, web penetration, and defense techniques.',
+    description: 'Learn the essentials of ethical hacking in an intensive 14-day boot camp. Designed for students and aspiring security researchers looking for rapid practical skill-building.',
+    level: 'Beginner',
+    duration_weeks: 2,
+    duration_text: '14 Days',
+    learning_mode: 'Live Daily Sessions & Hands-on Labs',
+    hours_per_week: 10,
+    fee_amount: 499,
+    currency: 'INR',
+    status: 'published',
+    featured: true,
+    badge_text: 'POPULAR ₹499',
+    certification_title: 'EV Certified Junior Ethical Hacker',
+    batch_start_date: '2026-11-20',
+    seats_remaining: 15,
+    syllabus: [],
+    outcomes: [
+      'Master core penetration testing workflows',
+      'Conduct network reconnaissance and vulnerability assessments',
+      'Understand OWASP Top 10 web vulnerabilities',
+      'Perform security testing using industry-standard tools',
+    ],
+    prerequisites: ['Basic computer and internet knowledge'],
+    tools_covered: ['Nmap', 'Wireshark', 'Burp Suite', 'Metasploit', 'Linux'],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
 ];
 
 export const INITIAL_VIDEOS: VideoItem[] = [
@@ -502,6 +534,15 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   contact_email: 'admissions@evcyberacademy.com',
   contact_whatsapp: '',
   counseling_hours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+  // Quick apply buttons (Admin editable)
+  quick_btn1_text: 'Apply for ₹499 - 14 Days Ethical Hacking Program',
+  quick_btn1_course_id: 'e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9012',
+  quick_btn1_course_name: '14-Day Ethical Hacking Program',
+  quick_btn1_enabled: true,
+  quick_btn2_text: 'Apply to Full Ethical Hacking Course',
+  quick_btn2_course_id: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
+  quick_btn2_course_name: 'Advanced Offensive Security & Red Team Operations',
+  quick_btn2_enabled: true,
 };
 
 export const INITIAL_STAFF: UserProfile[] = [

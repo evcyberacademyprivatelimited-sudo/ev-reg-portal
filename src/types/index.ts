@@ -199,5 +199,14 @@ export interface SiteSettings {
   contact_whatsapp: string;
   contact_address?: string;
   counseling_hours: string;
+  // Admin-editable quick apply buttons
+  quick_btn1_text?: string;
+  quick_btn1_course_id?: string;
+  quick_btn1_course_name?: string;
+  quick_btn1_enabled?: boolean;
+  quick_btn2_text?: string;
+  quick_btn2_course_id?: string;
+  quick_btn2_course_name?: string;
+  quick_btn2_enabled?: boolean;
 }
 

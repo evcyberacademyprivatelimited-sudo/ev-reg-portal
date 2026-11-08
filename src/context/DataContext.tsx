@@ -321,6 +321,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               updated.contact_whatsapp = row.value.whatsapp || updated.contact_whatsapp;
               updated.counseling_hours = row.value.counseling_hours || updated.counseling_hours;
             }
+            if (row.key === 'quick_apply_buttons' && row.value) {
+              updated.quick_btn1_text = row.value.btn1_text || updated.quick_btn1_text;
+              updated.quick_btn1_course_id = row.value.btn1_course_id || updated.quick_btn1_course_id;
+              updated.quick_btn1_course_name = row.value.btn1_course_name || updated.quick_btn1_course_name;
+              updated.quick_btn1_enabled = row.value.btn1_enabled !== undefined ? row.value.btn1_enabled : updated.quick_btn1_enabled;
+              updated.quick_btn2_text = row.value.btn2_text || updated.quick_btn2_text;
+              updated.quick_btn2_course_id = row.value.btn2_course_id || updated.quick_btn2_course_id;
+              updated.quick_btn2_course_name = row.value.btn2_course_name || updated.quick_btn2_course_name;
+              updated.quick_btn2_enabled = row.value.btn2_enabled !== undefined ? row.value.btn2_enabled : updated.quick_btn2_enabled;
+            }
           });
           return updated;
         });
@@ -1012,6 +1022,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: updated.contact_email,
             whatsapp: updated.contact_whatsapp,
             counseling_hours: updated.counseling_hours,
+          },
+          updated_at: new Date().toISOString(),
+        });
+
+        await supabase.from('site_settings').upsert({
+          key: 'quick_apply_buttons',
+          value: {
+            btn1_text: updated.quick_btn1_text,
+            btn1_course_id: updated.quick_btn1_course_id,
+            btn1_course_name: updated.quick_btn1_course_name,
+            btn1_enabled: updated.quick_btn1_enabled,
+            btn2_text: updated.quick_btn2_text,
+            btn2_course_id: updated.quick_btn2_course_id,
+            btn2_course_name: updated.quick_btn2_course_name,
+            btn2_enabled: updated.quick_btn2_enabled,
           },
           updated_at: new Date().toISOString(),
         });

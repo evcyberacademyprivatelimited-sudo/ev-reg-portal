@@ -9,6 +9,8 @@ import {
   Mail,
   Phone,
   MapPin,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { trackEvent } from '../lib/analytics';
 
@@ -40,6 +42,91 @@ export const HomePage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleQuickApply1 = () => {
+    let target = siteSettings.quick_btn1_course_id
+      ? courses.find((c) => c.id === siteSettings.quick_btn1_course_id)
+      : undefined;
+
+    if (!target) {
+      target = courses.find(
+        (c) =>
+          c.title.toLowerCase().includes('14-day') ||
+          c.title.toLowerCase().includes('14 day') ||
+          c.title.toLowerCase().includes('499')
+      );
+    }
+
+    if (!target) {
+      target = courses[0] || {
+        id: siteSettings.quick_btn1_course_id || 'e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9012',
+        title: siteSettings.quick_btn1_course_name || '14-Day Ethical Hacking Program',
+        slug: '14-days-ethical-hacking-program',
+        tagline: '14 Days Intensive Ethical Hacking & Hands-on Cyber Training',
+        summary:
+          'A fast-paced, practical 14-day crash program covering cybersecurity fundamentals, network reconnaissance, web penetration, and defense techniques.',
+        level: 'Beginner',
+        duration_weeks: 2,
+        duration_text: '14 Days',
+        learning_mode: 'Live Daily Sessions & Hands-on Labs',
+        hours_per_week: 10,
+        fee_amount: 499,
+        currency: 'INR',
+        status: 'published',
+        featured: true,
+        certification_title: 'EV Certified Junior Ethical Hacker',
+      };
+    }
+
+    setSelectedCourse(target);
+    setIsModalOpen(true);
+    trackEvent('cta_click', target.id, {
+      course_name: target.title,
+      source: 'quick_apply_btn_1',
+    });
+  };
+
+  const handleQuickApply2 = () => {
+    let target = siteSettings.quick_btn2_course_id
+      ? courses.find((c) => c.id === siteSettings.quick_btn2_course_id)
+      : undefined;
+
+    if (!target) {
+      target = courses.find(
+        (c) =>
+          c.title.toLowerCase().includes('offensive') ||
+          c.title.toLowerCase().includes('full ethical') ||
+          c.title.toLowerCase().includes('red team')
+      );
+    }
+
+    if (!target) {
+      target = (courses.length > 1 ? courses[1] : courses[0]) || {
+        id: siteSettings.quick_btn2_course_id || 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
+        title: siteSettings.quick_btn2_course_name || 'Full Ethical Hacking Course',
+        slug: 'full-ethical-hacking-course',
+        tagline: 'Learn Real-world Adversary Emulation, Active Directory Exploitation & Evasion',
+        summary:
+          'Comprehensive offensive security and red teaming masterclass from network penetration to Active Directory exploitation.',
+        level: 'Advanced',
+        duration_weeks: 16,
+        duration_text: '16 Weeks',
+        hours_per_week: 12,
+        fee_amount: 64999,
+        currency: 'INR',
+        status: 'published',
+        featured: true,
+        certification_title: 'EV Certified Red Team Specialist',
+      };
+    }
+
+    setSelectedCourse(target);
+    setIsModalOpen(true);
+    trackEvent('cta_click', target.id, {
+      course_name: target.title,
+      source: 'quick_apply_btn_2',
+    });
+  };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -60,20 +147,46 @@ export const HomePage: React.FC = () => {
       ========================================================================== */}
       <section id="courses" className="pt-8 pb-16 sm:pt-12 sm:pb-20 bg-slate-50 border-b border-slate-200 scroll-mt-20 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
-          {/* Welcome Heading */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
+          {/* Top Brand Identity & 2 Quick Apply Action Buttons (Admin Editable) */}
+          <div className="text-center max-w-4xl mx-auto space-y-5">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100 border border-red-200 text-red-700 text-xs font-bold uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4 text-red-600" />
               <span>EV Cyber Academy Private Limited</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-              Scroll Down to Apply
-            </h1>
+            {/* 2 Quick Apply Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-1">
+              {siteSettings.quick_btn1_enabled !== false && (
+                <button
+                  type="button"
+                  onClick={handleQuickApply1}
+                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-red-600 via-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:from-red-700 text-white font-black text-sm sm:text-base shadow-lg hover:shadow-xl hover:shadow-red-600/30 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group/btn"
+                >
+                  <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <Sparkles className="w-5 h-5 text-amber-300 shrink-0" />
+                  <span>
+                    {siteSettings.quick_btn1_text ||
+                      'Apply for ₹499 - 14 Days Ethical Hacking Program'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              )}
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Click to Apply on any program below to submit your official registration.
-            </p>
+              {siteSettings.quick_btn2_enabled !== false && (
+                <button
+                  type="button"
+                  onClick={handleQuickApply2}
+                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-black text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl hover:shadow-slate-900/25 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden border border-slate-700 group/btn2"
+                >
+                  <div className="absolute inset-0 -translate-x-full group-hover/btn2:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                  <ShieldCheck className="w-5 h-5 text-red-500 shrink-0" />
+                  <span>
+                    {siteSettings.quick_btn2_text || 'Apply to Full Ethical Hacking Course'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn2:translate-x-1 transition-transform" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Course Cards Grid - First thing student sees */}
