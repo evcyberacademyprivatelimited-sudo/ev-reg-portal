@@ -6,14 +6,9 @@ import { YouTubeEmbed } from '../components/common/YouTubeEmbed';
 import { Course } from '../types';
 import {
   ShieldCheck,
-  ArrowRight,
-  BookOpen,
-  Play,
   Mail,
   Phone,
   MapPin,
-  Clock,
-  Sparkles,
 } from 'lucide-react';
 import { trackEvent } from '../lib/analytics';
 
@@ -61,47 +56,50 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900">
       {/* =========================================================================
-          1. WELCOME HEADING / CORPORATE HERO
+          1. COURSES & PROGRAMS – FIRST SECTION (IMMEDIATE COURSE CARDS)
       ========================================================================== */}
-      <section className="bg-slate-950 text-white pt-14 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-800 relative overflow-hidden">
-        {/* Subtle corporate grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+      <section id="courses" className="pt-8 pb-16 sm:pt-12 sm:pb-20 bg-slate-50 border-b border-slate-200 scroll-mt-20 flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
+          {/* Welcome Heading */}
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100 border border-red-200 text-red-700 text-xs font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-4 h-4 text-red-600" />
+              <span>EV Cyber Academy Private Limited</span>
+            </div>
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          {/* Corporate Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300 text-xs font-bold uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-red-500" />
-            <span>EV Cyber Academy Private Limited</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+              Courses &amp; Programs
+            </h1>
+
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Select a course below and click <strong className="text-slate-900 font-semibold">Apply Now</strong> to submit your registration.
+            </p>
           </div>
 
-          {/* Main Welcome Heading */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-            Industry-Standard Cybersecurity &amp; Defense Programs
-          </h1>
+          {/* Course Cards Grid - First thing student sees */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {displayCourses.map((course) => (
+              <CourseCard key={course.id} course={course} onApply={handleApply} />
+            ))}
+          </div>
 
-          {/* Short Subheading */}
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
-            Welcome to the official course registration platform. Browse the available programs below, choose your track, and submit your registration directly.
-          </p>
-
-          {/* Action Button to scroll directly to Courses */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => scrollToSection('courses')}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm shadow-xl hover:shadow-brand transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Explore Courses &amp; Apply</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          {/* Quick General Application Banner */}
+          <div className="max-w-5xl mx-auto p-6 sm:p-8 rounded-3xl bg-slate-900 text-white border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+            <div className="space-y-1 text-center sm:text-left">
+              <h3 className="text-lg font-bold text-white">
+                Not sure which course is right for your background?
+              </h3>
+              <p className="text-xs text-slate-400">
+                Submit a general registration and our admissions team will advise you directly.
+              </p>
+            </div>
 
             <button
               type="button"
-              onClick={() => scrollToSection('overview')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer"
+              onClick={handleGeneralApply}
+              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 cursor-pointer shadow"
             >
-              <Play className="w-4 h-4 text-red-400 fill-current" />
-              <span>Watch Academy Video</span>
+              General Application
             </button>
           </div>
         </div>
@@ -138,59 +136,9 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          3. COURSES & PROGRAMS – MAIN SECTION (THE STAR OF THE PAGE)
+          3. SIMPLE CONTACT INFORMATION
       ========================================================================== */}
-      <section id="courses" className="py-16 sm:py-24 bg-slate-50 border-b border-slate-200 scroll-mt-16 flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Main Section Header */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-wider">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Available Programs</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-              Courses &amp; Programs
-            </h2>
-
-            <p className="text-base text-slate-600 leading-relaxed">
-              Explore our comprehensive cybersecurity training tracks. Select a course and click <strong className="text-slate-900 font-semibold">Apply Now</strong> to register your application online.
-            </p>
-          </div>
-
-          {/* Minimalist Course Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {displayCourses.map((course) => (
-              <CourseCard key={course.id} course={course} onApply={handleApply} />
-            ))}
-          </div>
-
-          {/* Quick Apply Banner */}
-          <div className="max-w-5xl mx-auto p-6 sm:p-8 rounded-3xl bg-slate-900 text-white border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-lg font-bold text-white">
-                Not sure which course is right for your background?
-              </h3>
-              <p className="text-xs text-slate-400">
-                Submit a general registration and our team will evaluate your profile and advise you directly.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleGeneralApply}
-              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 cursor-pointer shadow"
-            >
-              General Application
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          4. SIMPLE CONTACT INFORMATION
-      ========================================================================== */}
-      <section id="contact-info" className="py-14 sm:py-20 bg-white">
+      <section id="contact" className="py-14 sm:py-20 bg-slate-50 scroll-mt-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-red-600">
@@ -206,7 +154,7 @@ export const HomePage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {/* Phone / Helpline */}
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
               <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
                 <Phone className="w-5 h-5" />
               </div>
@@ -224,7 +172,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Email */}
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
               <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
                 <Mail className="w-5 h-5" />
               </div>
@@ -238,7 +186,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Office Location */}
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
               <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
                 <MapPin className="w-5 h-5" />
               </div>
