@@ -23,6 +23,17 @@ import { useAuth } from './AuthContext';
 import { extractYouTubeId } from '../lib/youtube';
 import { trackEvent } from '../lib/analytics';
 
+const generateUuid = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 interface DuplicateCheckResult {
   isDuplicate: boolean;
   existingLead?: Lead;
@@ -340,7 +351,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = new Date().toISOString();
 
     const preparedCourse: Course = {
-      id: courseData.id || 'crs_' + Math.random().toString(36).substring(2, 10),
+      id: courseData.id || generateUuid(),
       slug:
         courseData.slug ||
         (courseData.title
@@ -375,9 +386,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       try {
         if (isNew) {
-          const { data, error } = await supabase.from('courses').insert([preparedCourse]).select().single();
+          // Omit id so PostgreSQL automatically assigns default uuid_generate_v4()
+          const { id: _omitId, ...insertPayload } = preparedCourse;
+          const { data, error } = await supabase.from('courses').insert([insertPayload]).select().single();
           if (error) return { success: false, error: error.message };
-          if (data) setCourses((prev) => [data as Course, ...prev]);
+          if (data) {
+            setCourses((prev) => [data as Course, ...prev]);
+            return { success: true, data: data as Course };
+          }
         } else {
           const { data, error } = await supabase
             .from('courses')
@@ -388,6 +404,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (error) return { success: false, error: error.message };
           if (data) {
             setCourses((prev) => prev.map((c) => (c.id === data.id ? (data as Course) : c)));
+            return { success: true, data: data as Course };
           }
         }
         return { success: true, data: preparedCourse };
@@ -438,7 +455,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const preparedVideo: VideoItem = {
-      id: videoData.id || 'vid_' + Math.random().toString(36).substring(2, 10),
+      id: videoData.id || generateUuid(),
       title: videoData.title || 'Cyber Range Walkthrough',
       description: videoData.description || '',
       youtube_url: videoData.youtube_url || `https://www.youtube.com/watch?v=${videoId}`,
@@ -458,9 +475,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       try {
         if (isNew) {
-          const { data, error } = await supabase.from('videos').insert([preparedVideo]).select().single();
+          const { id: _omitId, ...insertPayload } = preparedVideo;
+          const { data, error } = await supabase.from('videos').insert([insertPayload]).select().single();
           if (error) return { success: false, error: error.message };
-          if (data) setVideos((prev) => [...prev, data as VideoItem]);
+          if (data) {
+            setVideos((prev) => [...prev, data as VideoItem]);
+            return { success: true, data: data as VideoItem };
+          }
         } else {
           const { data, error } = await supabase
             .from('videos')
@@ -471,6 +492,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (error) return { success: false, error: error.message };
           if (data) {
             setVideos((prev) => prev.map((v) => (v.id === data.id ? (data as VideoItem) : v)));
+            return { success: true, data: data as VideoItem };
           }
         }
         return { success: true, data: preparedVideo };
@@ -1004,7 +1026,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveFaq = async (faqData: Partial<Faq>): Promise<{ success: boolean }> => {
     const isNew = !faqData.id;
     const item: Faq = {
-      id: faqData.id || 'faq_' + Math.random().toString(36).substring(2, 9),
+      id: faqData.id || generateUuid(),
       category: faqData.category || 'General',
       question: faqData.question || '',
       answer: faqData.answer || '',
@@ -1017,7 +1039,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       try {
         if (isNew) {
-          await supabase.from('faqs').insert([item]);
+          const { id: _omitId, ...insertPayload } = item;
+          const { data } = await supabase.from('faqs').insert([insertPayload]).select().single();
+          if (data) item.id = data.id;
         } else {
           await supabase.from('faqs').update(item).eq('id', item.id);
         }
@@ -1049,7 +1073,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveTestimonial = async (testData: Partial<Testimonial>): Promise<{ success: boolean }> => {
     const isNew = !testData.id;
     const item: Testimonial = {
-      id: testData.id || 'test_' + Math.random().toString(36).substring(2, 9),
+      id: testData.id || generateUuid(),
       name: testData.name || '',
       role: testData.role || '',
       company: testData.company || '',
@@ -1064,7 +1088,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       try {
         if (isNew) {
-          await supabase.from('testimonials').insert([item]);
+          const { id: _omitId, ...insertPayload } = item;
+          const { data } = await supabase.from('testimonials').insert([insertPayload]).select().single();
+          if (data) item.id = data.id;
         } else {
           await supabase.from('testimonials').update(item).eq('id', item.id);
         }
