@@ -144,16 +144,20 @@ export const HomePage: React.FC = () => {
   const videoUrl = heroVideo?.youtube_video_id || heroVideo?.youtube_url || 'https://www.youtube.com/watch?v=inWWhr5tnEA';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900">
+    <div className="min-h-screen bg-[#030712] flex flex-col text-slate-100">
       {/* =========================================================================
           1. COURSES & PROGRAMS – FIRST SECTION (IMMEDIATE COURSE CARDS)
       ========================================================================== */}
-      <section id="courses" className="pt-8 pb-16 sm:pt-12 sm:pb-20 bg-slate-50 border-b border-slate-200 scroll-mt-20 flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
+      <section id="courses" className="pt-8 pb-16 sm:pt-12 sm:pb-20 bg-[#030712] border-b border-slate-800/80 scroll-mt-20 flex-1 relative overflow-hidden">
+        {/* Subtle Cyber Grid Matrix Background & Glow */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ef444408_1px,transparent_1px),linear-gradient(to_bottom,#ef444408_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-red-600/10 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
           {/* Top Brand Identity & 2 Quick Apply Action Buttons (Admin Editable) */}
           <div className="text-center max-w-4xl mx-auto space-y-5">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100 border border-red-200 text-red-700 text-xs font-bold uppercase tracking-wider">
-              <ShieldCheck className="w-4 h-4 text-red-600" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/60 border border-red-800/50 text-red-400 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-sm shadow-inner">
+              <ShieldCheck className="w-4 h-4 text-red-500" />
               <span>EV Cyber Academy Private Limited</span>
             </div>
 
@@ -179,7 +183,7 @@ export const HomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleQuickApply2}
-                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-black text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl hover:shadow-slate-900/25 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden border border-slate-700 group/btn2"
+                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#090d16] hover:bg-[#111726] active:bg-black text-slate-200 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl hover:shadow-slate-900/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden border border-slate-800 hover:border-slate-700 group/btn2"
                 >
                   <div className="absolute inset-0 -translate-x-full group-hover/btn2:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                   <ShieldCheck className="w-5 h-5 text-red-500 shrink-0" />
@@ -200,8 +204,9 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Quick General Application Banner */}
-          <div className="max-w-5xl mx-auto p-6 sm:p-8 rounded-3xl bg-slate-900 text-white border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="space-y-1 text-center sm:text-left">
+          <div className="max-w-5xl mx-auto p-6 sm:p-8 rounded-3xl bg-[#090d16] text-white border border-slate-800/90 hover:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 via-transparent to-transparent pointer-events-none" />
+            <div className="space-y-1 text-center sm:text-left relative z-10">
               <h3 className="text-lg font-bold text-white">
                 Not sure which course is right for your background?
               </h3>
@@ -213,7 +218,7 @@ export const HomePage: React.FC = () => {
             <button
               type="button"
               onClick={handleGeneralApply}
-              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 cursor-pointer shadow"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:from-red-700 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 cursor-pointer shadow-lg shadow-red-950/50 relative z-10"
             >
               General Application
             </button>
@@ -224,21 +229,22 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           2. INTRODUCTION / PROMOTIONAL VIDEO
       ========================================================================== */}
-      <section id="overview" className="py-14 sm:py-20 bg-white border-b border-slate-200 scroll-mt-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <section id="overview" className="py-14 sm:py-20 bg-[#060a14] border-b border-slate-800/80 scroll-mt-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ef444405_1px,transparent_1px),linear-gradient(to_bottom,#ef444405_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="text-center space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-600">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-red-500">
               Overview
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Introduction to EV Cyber Academy
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
               Get an inside look at EV Cyber Academy&apos;s practical training methodology, cyber range labs, and technical programs.
             </p>
           </div>
 
-          <div className="p-2 sm:p-3 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl">
+          <div className="p-2 sm:p-3 rounded-3xl bg-[#090d16] border border-slate-800/90 shadow-2xl ring-1 ring-slate-800">
             <YouTubeEmbed
               urlOrId={videoUrl}
               title={heroVideo?.title || 'EV Cyber Academy Overview'}
@@ -254,31 +260,31 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           3. SIMPLE CONTACT INFORMATION
       ========================================================================== */}
-      <section id="contact" className="py-14 sm:py-20 bg-slate-50 scroll-mt-20">
+      <section id="contact" className="py-14 sm:py-20 bg-[#030712] scroll-mt-20 relative">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-600">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-red-500">
               Get in Touch
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Contact for Courses
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
               Have questions regarding our training programs or batch schedules? Contact EV Cyber Academy Private Limited.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {/* Phone / Helpline */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
+            <div className="p-6 rounded-2xl bg-[#090d16] border border-slate-800/90 hover:border-red-500/40 shadow-xl transition-all duration-300 space-y-3 group">
+              <div className="w-10 h-10 rounded-xl bg-red-950/40 border border-red-900/40 text-red-500 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Phone className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-slate-900 text-sm">Contact Number</h4>
+              <h4 className="font-bold text-white text-sm">Contact Number</h4>
               {siteSettings.contact_phone ? (
                 <a
                   href={`tel:${siteSettings.contact_phone}`}
-                  className="text-xs font-semibold text-slate-700 hover:text-red-600 transition block"
+                  className="text-xs font-semibold text-slate-300 hover:text-red-400 transition block"
                 >
                   {siteSettings.contact_phone}
                 </a>
@@ -288,26 +294,26 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Email */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
+            <div className="p-6 rounded-2xl bg-[#090d16] border border-slate-800/90 hover:border-red-500/40 shadow-xl transition-all duration-300 space-y-3 group">
+              <div className="w-10 h-10 rounded-xl bg-red-950/40 border border-red-900/40 text-red-500 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Mail className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-slate-900 text-sm">Official Email</h4>
+              <h4 className="font-bold text-white text-sm">Official Email</h4>
               <a
                 href={`mailto:${siteSettings.contact_email}`}
-                className="text-xs font-semibold text-slate-700 hover:text-red-600 transition block truncate"
+                className="text-xs font-semibold text-slate-300 hover:text-red-400 transition block truncate"
               >
                 {siteSettings.contact_email}
               </a>
             </div>
 
             {/* Office Location */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
+            <div className="p-6 rounded-2xl bg-[#090d16] border border-slate-800/90 hover:border-red-500/40 shadow-xl transition-all duration-300 space-y-3 group">
+              <div className="w-10 h-10 rounded-xl bg-red-950/40 border border-red-900/40 text-red-500 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <MapPin className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-slate-900 text-sm">Location</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <h4 className="font-bold text-white text-sm">Location</h4>
+              <p className="text-xs text-slate-300 leading-relaxed">
                 {siteSettings.contact_address || 'Bangalore & Online Worldwide'}
               </p>
             </div>

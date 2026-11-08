@@ -12,7 +12,7 @@ import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 // Layout for the single-page student registration portal
 const PublicLayout: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-red-600 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#030712] text-slate-100 selection:bg-red-600 selection:text-white">
       <Header />
       <main className="flex-1">
         <Outlet />
