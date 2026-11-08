@@ -76,11 +76,6 @@ export const Footer: React.FC = () => {
                   Admissions FAQs
                 </Link>
               </li>
-              <li>
-                <Link to="/login" className="text-slate-400 hover:text-white transition">
-                  Counselor Staff Login
-                </Link>
-              </li>
             </ul>
           </div>
 

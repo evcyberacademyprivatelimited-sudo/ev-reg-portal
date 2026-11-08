@@ -44,14 +44,18 @@ export const Header: React.FC = () => {
               <PhoneCall className="w-3.5 h-3.5 text-red-500" />
               <span>Counselor Helpline: {siteSettings.contact_phone}</span>
             </span>
-            <span className="text-slate-600">|</span>
-            <Link
-              to={isAuthenticated ? '/admin' : '/login'}
-              className="text-slate-300 hover:text-red-400 flex items-center gap-1 transition"
-            >
-              <Lock className="w-3 h-3 text-red-500" />
-              <span>{isAuthenticated ? 'Admin Console' : 'Counselor Login'}</span>
-            </Link>
+            {isAuthenticated && (
+              <>
+                <span className="text-slate-600">|</span>
+                <Link
+                  to="/admin"
+                  className="text-slate-300 hover:text-red-400 flex items-center gap-1 transition"
+                >
+                  <Lock className="w-3 h-3 text-red-500" />
+                  <span>Admin Console</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -173,14 +177,16 @@ export const Header: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            <Link
-              to={isAuthenticated ? '/admin' : '/login'}
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-900"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>{isAuthenticated ? 'Go to Admin Console' : 'Counselor Login'}</span>
-            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-900"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Go to Admin Console</span>
+              </Link>
+            )}
           </div>
         </div>
       )}
