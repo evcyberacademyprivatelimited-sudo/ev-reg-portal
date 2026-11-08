@@ -38,6 +38,9 @@ export interface Course {
   description?: string;
   level: CourseLevel;
   duration_weeks: number;
+  duration_text?: string;
+  learning_mode?: string;
+  image_url?: string;
   hours_per_week: number;
   fee_amount: number;
   currency: string;

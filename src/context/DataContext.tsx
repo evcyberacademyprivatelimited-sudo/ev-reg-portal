@@ -99,7 +99,7 @@ const STORAGE_TESTIMONIALS = 'ev_testimonials_data';
 const STORAGE_SETTINGS = 'ev_settings_data';
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isSuperAdmin, staffList } = useAuth();
+  const { user, isSuperAdmin, staffList, isAuthenticated } = useAuth();
   const isProductionDB = isSupabaseConfigured();
 
   // Courses state
@@ -516,7 +516,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!error && isDup === true) {
           return {
             isDuplicate: true,
-            message: `An application from ${email} for this program is already registered in our admissions system. A counselor will review your file.`,
+            message: `An application from ${email} for this program is already registered. Our team will contact you shortly.`,
           };
         }
       } catch (err) {
@@ -532,7 +532,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return {
           isDuplicate: true,
           existingLead: match,
-          message: `An application from ${email} for this course is already on file (Lead Ref: ${match.lead_number}). Our admissions counselor is actively reviewing your file.`,
+          message: `An application from ${email} for this course is already registered (Application Ref: ${match.lead_number}). Our team will contact you shortly.`,
         };
       }
     }
@@ -840,7 +840,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: 'note_' + Math.random().toString(36).substring(2, 9),
       lead_id: leadId,
       author_id: user?.id,
-      author_name: user?.full_name || 'Admissions Counselor',
+      author_name: user?.full_name || 'Administrator',
       note: noteText.trim(),
       created_at: now,
     };
@@ -853,7 +853,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             {
               lead_id: leadId,
               author_id: user?.id,
-              author_name: user?.full_name || 'Admissions Counselor',
+              author_name: user?.full_name || 'Administrator',
               note: noteText.trim(),
             },
           ])
@@ -881,8 +881,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteLead = async (leadId: string): Promise<{ success: boolean; error?: string }> => {
-    if (!isSuperAdmin) {
-      return { success: false, error: 'Permission denied: Super Admin role required.' };
+    if (!isAuthenticated) {
+      return { success: false, error: 'Authentication required.' };
     }
 
     if (isSupabaseConfigured()) {
@@ -918,7 +918,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'College/Organization',
       'Experience Level',
       'Status',
-      'Assigned Counselor',
+      'Assigned Staff',
       'Next Follow-Up Date',
       'Referral Source',
       'UTM Source',

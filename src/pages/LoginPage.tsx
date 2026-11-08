@@ -49,10 +49,10 @@ export const LoginPage: React.FC = () => {
           <Logo variant="light" size="lg" />
         </Link>
         <h2 className="mt-6 text-2xl font-black text-white tracking-tight">
-          Admissions &amp; Lead Command Portal
+          Admin Panel Login
         </h2>
         <p className="mt-2 text-xs text-slate-400">
-          Authorized staff &amp; super admin access only
+          EV Cyber Academy Private Limited &bull; Course Registration Management
         </p>
       </div>
 
@@ -110,11 +110,11 @@ export const LoginPage: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Verifying Access...</span>
+                    <span>Signing in...</span>
                   </>
                 ) : (
                   <>
-                    <span>Authenticate Console Access</span>
+                    <span>Sign In to Admin Panel</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}

@@ -3,21 +3,13 @@ import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { HomePage } from './pages/HomePage';
-import { ProgramsPage } from './pages/ProgramsPage';
-import { CourseDetailPage } from './pages/CourseDetailPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { RegistrationSuccessPage } from './pages/RegistrationSuccessPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminLeadsPage } from './pages/admin/AdminLeadsPage';
 import { AdminCoursesPage } from './pages/admin/AdminCoursesPage';
-import { AdminVideosPage } from './pages/admin/AdminVideosPage';
-import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
-import { AdminContentPage } from './pages/admin/AdminContentPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
-// Layout for public pages
+// Layout for the single-page student registration portal
 const PublicLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-red-600 selection:text-white">
@@ -33,34 +25,33 @@ const PublicLayout: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <Routes>
-      {/* Public Pages */}
+      {/* Student Website – Single-Page Course Registration Experience */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/programs" element={<ProgramsPage />} />
-        <Route path="/courses/:slug" element={<CourseDetailPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/registration-success" element={<RegistrationSuccessPage />} />
+        {/* Seamless redirects for any legacy multi-page links */}
+        <Route path="/programs" element={<Navigate to="/" replace />} />
+        <Route path="/courses/*" element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
+        <Route path="/registration-success" element={<Navigate to="/" replace />} />
       </Route>
 
-      {/* Auth */}
+      {/* Admin Authentication */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Admin CRM Console */}
+      {/* Admin Panel – Extremely Simple Management */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboardPage />} />
-        <Route path="leads" element={<AdminLeadsPage />} />
         <Route path="courses" element={<AdminCoursesPage />} />
-        <Route path="videos" element={<AdminVideosPage />} />
-        <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route path="content" element={<AdminContentPage />} />
         <Route path="settings" element={<AdminSettingsPage />} />
+        {/* Redirect any legacy admin sub-routes */}
+        <Route path="leads" element={<Navigate to="/admin" replace />} />
+        <Route path="videos" element={<Navigate to="/admin/settings" replace />} />
+        <Route path="analytics" element={<Navigate to="/admin" replace />} />
+        <Route path="content" element={<Navigate to="/admin/settings" replace />} />
       </Route>
 
-      {/* Fallback */}
+      {/* Global Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
-
-export default App;
-

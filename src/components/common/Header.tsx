@@ -1,146 +1,103 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
-import { Shield, PhoneCall, Menu, X, ArrowRight, UserCheck, Lock } from 'lucide-react';
+import { Menu, X, ArrowRight, Lock, PhoneCall } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { trackEvent } from '../../lib/analytics';
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const { isAuthenticated, user } = useAuth();
-  const { siteSettings, getHeroVideo, testimonials } = useData();
-  const heroVideo = getHeroVideo();
+  const { isAuthenticated } = useAuth();
+  const { siteSettings } = useData();
 
-  const handleCtaClick = (source: string) => {
-    trackEvent('cta_click', undefined, {
-      source,
-      destination: '/register',
-    });
+  const scrollToSection = (id: string) => {
+    setMobileMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
-  const navLinks = [
-    { label: 'All Programs', path: '/programs' },
-    ...(heroVideo ? [{ label: 'Inside the War Room', path: '/#video-spotlight' }] : []),
-    { label: 'Curriculum & Labs', path: '/#methodology' },
-    ...(testimonials.some((t) => t.is_featured) ? [{ label: 'Alumni Feedback', path: '/#testimonials' }] : []),
-    { label: 'FAQs', path: '/#faqs' },
-  ];
-
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-      {/* Top micro alert banner */}
-      <div className="bg-slate-950 text-white text-xs py-1.5 px-4 font-medium">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300">
-              <strong className="text-white font-semibold">Cohort Admissions Active:</strong> Hands-on training on enterprise cyber ranges.
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-4 text-slate-300">
-            {siteSettings.contact_phone ? (
-              <a
-                href={`tel:${siteSettings.contact_phone}`}
-                className="flex items-center gap-1.5 hover:text-white transition"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-red-500" />
-                <span>Admissions: {siteSettings.contact_phone}</span>
-              </a>
-            ) : (
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <Shield className="w-3.5 h-3.5 text-red-500" />
-                <span>Enterprise Cybersecurity Training &amp; Cyber Ranges</span>
-              </span>
-            )}
-            {isAuthenticated && (
-              <>
-                <span className="text-slate-600">|</span>
-                <Link
-                  to="/admin"
-                  className="text-slate-300 hover:text-red-400 flex items-center gap-1 transition"
-                >
-                  <Lock className="w-3 h-3 text-red-500" />
-                  <span>Admin Console</span>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Main navigation */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-red-500 rounded-lg p-1">
+          {/* Official Logo */}
+          <Link
+            to="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center focus:outline-none"
+          >
             <Logo size="md" />
           </Link>
 
-          {/* Desktop Links */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-semibold transition-colors duration-200 ${
-                  location.pathname === link.path
-                    ? 'text-red-600 font-bold'
-                    : 'text-slate-700 hover:text-red-600'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8">
+            <button
+              type="button"
+              onClick={() => scrollToSection('courses')}
+              className="text-sm font-semibold text-slate-700 hover:text-red-600 transition cursor-pointer"
+            >
+              Courses &amp; Programs
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('overview')}
+              className="text-sm font-semibold text-slate-700 hover:text-red-600 transition cursor-pointer"
+            >
+              Overview Video
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="text-sm font-semibold text-slate-700 hover:text-red-600 transition cursor-pointer"
+            >
+              Contact Us
+            </button>
           </nav>
 
           {/* Action CTAs */}
           <div className="hidden sm:flex items-center gap-3">
-            {siteSettings.contact_whatsapp && (
-              <a
-                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20would%20like%20to%20learn%20more%20about%20your%20upcoming%20cybersecurity%20cohorts.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-1.5"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Chat with Counselor</span>
-              </a>
-            )}
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded-xl hover:bg-slate-50 transition cursor-pointer"
+            >
+              Contact for Courses
+            </button>
 
-            <Link
-              to="/register"
-              onClick={() => handleCtaClick('header_apply_now')}
-              className="px-5 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg shadow-md hover:shadow-brand transition-all duration-200 flex items-center gap-2 group cursor-pointer"
+            <button
+              type="button"
+              onClick={() => scrollToSection('courses')}
+              className="px-5 py-2.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
             >
               <span>Apply Now</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
 
             {isAuthenticated && (
               <Link
                 to="/admin"
-                className="p-2 text-slate-600 hover:text-red-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition"
-                title={`Logged in as ${user?.full_name}`}
+                className="p-2 text-slate-500 hover:text-red-600 border border-slate-200 rounded-xl hover:bg-slate-100 transition"
+                title="Go to Admin Panel"
               >
-                <UserCheck className="w-5 h-5 text-red-600" />
+                <Lock className="w-4 h-4 text-red-600" />
               </Link>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Link
-              to="/register"
-              onClick={() => handleCtaClick('mobile_header_apply')}
-              className="px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 rounded-md"
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              onClick={() => scrollToSection('courses')}
+              className="px-3 py-1.5 text-xs font-bold text-white bg-red-600 rounded-lg"
             >
               Apply
-            </Link>
+            </button>
 
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-slate-700 hover:text-slate-900 focus:outline-none"
               aria-label="Toggle navigation menu"
@@ -153,53 +110,58 @@ export const Header: React.FC = () => {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl">
           <nav className="flex flex-col space-y-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-red-50 hover:text-red-600 rounded-md transition"
-              >
-                {link.label}
-              </Link>
-            ))}
+            <button
+              type="button"
+              onClick={() => scrollToSection('courses')}
+              className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+            >
+              Courses &amp; Programs
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('overview')}
+              className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+            >
+              Overview Video
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+            >
+              Contact Us
+            </button>
           </nav>
 
           <div className="pt-3 border-t border-slate-100 space-y-2">
-            {siteSettings.contact_whatsapp && (
-              <a
-                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20EV%20Cyber%20Academy`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg"
-              >
-                <PhoneCall className="w-4 h-4 text-emerald-600" />
-                <span>WhatsApp Academic Desk</span>
-              </a>
-            )}
-
-            <Link
-              to="/register"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleCtaClick('mobile_drawer_apply');
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow"
+            <button
+              type="button"
+              onClick={() => scrollToSection('courses')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow"
             >
-              <span>Apply for Next Cohort</span>
+              <span>Apply for Course</span>
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-xl"
+            >
+              <PhoneCall className="w-3.5 h-3.5 text-slate-600" />
+              <span>Contact for Courses</span>
+            </button>
 
             {isAuthenticated && (
               <Link
                 to="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-900"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium text-slate-600 hover:text-red-600"
               >
                 <Lock className="w-3.5 h-3.5" />
-                <span>Go to Admin Console</span>
+                <span>Admin Panel</span>
               </Link>
             )}
           </div>
@@ -208,4 +170,3 @@ export const Header: React.FC = () => {
     </header>
   );
 };
-

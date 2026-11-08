@@ -70,11 +70,11 @@ export const Logo: React.FC<LogoProps> = ({
         </div>
         {showSubtitle && (
           <span
-            className={`text-[10px] tracking-widest font-semibold uppercase ${
+            className={`text-[10px] tracking-widest font-black uppercase ${
               isLight ? 'text-slate-400' : 'text-slate-500'
             }`}
           >
-            Defense & Offensive Engineering
+            Private Limited
           </span>
         )}
       </div>
