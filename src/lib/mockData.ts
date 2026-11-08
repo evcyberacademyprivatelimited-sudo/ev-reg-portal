@@ -15,7 +15,7 @@ export const INITIAL_COURSES: Course[] = [
     currency: 'INR',
     status: 'published',
     featured: true,
-    badge_text: 'MOST POPULAR',
+    badge_text: 'Professional Certification Track',
     certification_title: 'EV Certified Enterprise SOC Analyst (ECSA)',
     batch_start_date: '2026-11-25',
     seats_remaining: 8,
@@ -117,7 +117,7 @@ export const INITIAL_COURSES: Course[] = [
     currency: 'INR',
     status: 'published',
     featured: true,
-    badge_text: 'HARDCORE OFFENSIVE',
+    badge_text: 'Professional Certification Track',
     certification_title: 'EV Certified Red Team Specialist (ECRTS)',
     batch_start_date: '2026-12-05',
     seats_remaining: 5,
@@ -219,7 +219,7 @@ export const INITIAL_COURSES: Course[] = [
     currency: 'INR',
     status: 'published',
     featured: false,
-    badge_text: 'HIGH DEMAND',
+    badge_text: 'Professional Certification Track',
     certification_title: 'EV Certified Cloud Security Engineer (ECCSE)',
     batch_start_date: '2026-12-12',
     seats_remaining: 11,
@@ -310,7 +310,7 @@ export const INITIAL_COURSES: Course[] = [
     currency: 'INR',
     status: 'published',
     featured: false,
-    badge_text: 'BEGINNER FRIENDLY',
+    badge_text: 'Professional Certification Track',
     certification_title: 'EV Cyber Defense Associate (ECDA)',
     batch_start_date: '2026-11-20',
     seats_remaining: 14,
@@ -399,7 +399,7 @@ export const INITIAL_COURSES: Course[] = [
     currency: 'INR',
     status: 'published',
     featured: true,
-    badge_text: 'POPULAR ₹499',
+    badge_text: 'Professional Certification Track',
     certification_title: 'EV Certified Junior Ethical Hacker',
     batch_start_date: '2026-11-20',
     seats_remaining: 15,
@@ -543,6 +543,8 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   quick_btn2_course_id: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
   quick_btn2_course_name: 'Advanced Offensive Security & Red Team Operations',
   quick_btn2_enabled: true,
+  // Default card banner text (Admin editable)
+  default_card_banner_text: 'Professional Certification Track',
 };
 
 export const INITIAL_STAFF: UserProfile[] = [

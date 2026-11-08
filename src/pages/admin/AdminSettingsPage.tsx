@@ -38,6 +38,8 @@ export const AdminSettingsPage: React.FC = () => {
     quick_btn2_course_name:
       siteSettings.quick_btn2_course_name || 'Full Ethical Hacking Course',
     quick_btn2_enabled: siteSettings.quick_btn2_enabled !== false,
+    default_card_banner_text:
+      siteSettings.default_card_banner_text || 'Professional Certification Track',
   });
 
   // Contact form
@@ -271,6 +273,32 @@ export const AdminSettingsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Global Course Card Hacker Banner Text */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <span className="font-black text-sm text-slate-900 flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" />
+                Course Card Hacker Banner Label (Default)
+              </span>
+              <div>
+                <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Default Banner Badge Text
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={buttonsForm.default_card_banner_text}
+                  onChange={(e) =>
+                    setButtonsForm({ ...buttonsForm, default_card_banner_text: e.target.value })
+                  }
+                  placeholder="Professional Certification Track"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Displayed on the hacker-themed banner across all course cards (can also be customized per course in Course Management).
+                </p>
+              </div>
+            </div>
+
             <div className="flex justify-end">
               <button
                 type="submit"
@@ -278,7 +306,7 @@ export const AdminSettingsPage: React.FC = () => {
                 className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                <span>{isSavingButtons ? 'Saving...' : 'Save Quick Apply Buttons'}</span>
+                <span>{isSavingButtons ? 'Saving...' : 'Save Settings'}</span>
               </button>
             </div>
           </form>

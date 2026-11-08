@@ -208,5 +208,7 @@ export interface SiteSettings {
   quick_btn2_course_id?: string;
   quick_btn2_course_name?: string;
   quick_btn2_enabled?: boolean;
+  // Admin-editable course card banner text
+  default_card_banner_text?: string;
 }
 

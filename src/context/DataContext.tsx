@@ -331,6 +331,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               updated.quick_btn2_course_name = row.value.btn2_course_name || updated.quick_btn2_course_name;
               updated.quick_btn2_enabled = row.value.btn2_enabled !== undefined ? row.value.btn2_enabled : updated.quick_btn2_enabled;
             }
+            if (row.key === 'course_card_settings' && row.value) {
+              updated.default_card_banner_text = row.value.banner_text || updated.default_card_banner_text;
+            }
           });
           return updated;
         });
@@ -1037,6 +1040,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             btn2_course_id: updated.quick_btn2_course_id,
             btn2_course_name: updated.quick_btn2_course_name,
             btn2_enabled: updated.quick_btn2_enabled,
+          },
+          updated_at: new Date().toISOString(),
+        });
+
+        await supabase.from('site_settings').upsert({
+          key: 'course_card_settings',
+          value: {
+            banner_text: updated.default_card_banner_text,
           },
           updated_at: new Date().toISOString(),
         });

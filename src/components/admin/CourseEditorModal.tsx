@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff } from 'lucide-react';
+import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal } from 'lucide-react';
 import { Course, CourseStatus } from '../../types';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -15,17 +15,19 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
 
   const isEditing = Boolean(course?.id);
 
-  // Form states based strictly on Requirement 6:
+  // Form states based on requirements:
   // - Course Name
   // - Short Description
   // - Duration
   // - Learning Mode
   // - Course Image
+  // - Hacker Banner Text
   // - Publish / Hide Course
   const [courseName, setCourseName] = useState(course?.title || '');
   const [shortDescription, setShortDescription] = useState(course?.summary || '');
   const [durationWeeks, setDurationWeeks] = useState(course?.duration_weeks || 12);
   const [learningMode, setLearningMode] = useState(course?.learning_mode || course?.tagline || 'Live Online');
+  const [bannerText, setBannerText] = useState(course?.badge_text || 'Professional Certification Track');
   const [courseImage, setCourseImage] = useState(course?.image_url || '');
   const [isPublished, setIsPublished] = useState(course?.status !== 'draft');
 
@@ -51,6 +53,7 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
       description: shortDescription.trim(),
       tagline: learningMode.trim(),
       learning_mode: learningMode.trim(),
+      badge_text: bannerText.trim() || 'Professional Certification Track',
       duration_weeks: Number(durationWeeks) || 12,
       hours_per_week: course?.hours_per_week || 8,
       level: course?.level || 'Intermediate',
@@ -194,7 +197,28 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
             </div>
           </div>
 
-          {/* 6. Publish / Hide Course Toggle */}
+          {/* 6. Hacker Banner Label / Badge Text (Admin Editable) */}
+          <div>
+            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Card Banner Label / Badge
+            </label>
+            <div className="relative">
+              <Terminal className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                required
+                placeholder="e.g. Professional Certification Track"
+                value={bannerText}
+                onChange={(e) => setBannerText(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-xs"
+              />
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Displayed on the hacker-themed banner of this course card (e.g. Professional Certification Track, 14-Day Crash Program, etc.).
+            </p>
+          </div>
+
+          {/* 7. Publish / Hide Course Toggle */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <div>
               <p className="font-bold text-slate-900">Website Publication</p>
