@@ -115,9 +115,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onApply }) => {
             {course.title}
           </h3>
 
-          {/* Short Description */}
-          <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
-            {course.summary}
+          {/* Course Description (Full Visibility - No Line Clamping) */}
+          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+            {course.summary || course.description}
           </p>
         </div>
 

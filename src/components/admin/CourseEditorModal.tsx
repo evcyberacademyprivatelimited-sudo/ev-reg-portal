@@ -127,18 +127,22 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
           </div>
 
           {/* 2. Short Description */}
+          {/* 2. Course Description */}
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Short Description <span className="text-red-500">*</span>
+              Course Description <span className="text-red-500">*</span>
             </label>
             <textarea
-              rows={3}
+              rows={4}
               required
-              placeholder="Brief summary of the course and practical objectives..."
+              placeholder="Enter course description, learning outcomes, and practical objectives..."
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none leading-relaxed"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-y min-h-[110px] leading-relaxed text-xs"
             />
+            <p className="text-[11px] text-slate-500 mt-1">
+              The full description will be shown completely on the public course card without being cut off.
+            </p>
           </div>
 
           {/* 3. Duration & 4. Learning Mode Row */}
