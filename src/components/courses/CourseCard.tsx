@@ -32,6 +32,14 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onApply }) => {
     siteSettings.default_card_banner_text ||
     'Professional Certification Track';
 
+  // Pricing: Original Price & Now Price
+  const nowPrice = course.fee_amount ?? 0;
+  const originalPrice = course.original_price ?? 0;
+  const hasDiscount = originalPrice > nowPrice && originalPrice > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((originalPrice - nowPrice) / originalPrice) * 100)
+    : 0;
+
   const handleApplyClick = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (onApply) {
@@ -156,6 +164,41 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onApply }) => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Pricing Block: Original Price & Now Price */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/90 border border-slate-800/90 flex items-center justify-between gap-3 shadow-inner">
+            <div className="min-w-0">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                Course Fee
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-0.5">
+                {hasDiscount && (
+                  <div className="flex items-center gap-1 font-mono text-xs text-slate-400">
+                    <span>Original:</span>
+                    <span className="text-slate-500 line-through">
+                      ₹{originalPrice.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-baseline gap-1 font-mono">
+                  <span className="text-xs font-bold text-red-400">Now:</span>
+                  <span className="text-lg sm:text-xl font-black text-white tracking-tight">
+                    ₹{nowPrice.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {discountPercent > 0 ? (
+              <span className="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold shrink-0 shadow-sm">
+                {discountPercent}% OFF
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full bg-red-950/60 border border-red-800/50 text-red-400 text-[10px] font-mono font-bold uppercase shrink-0">
+                Live Batch
+              </span>
+            )}
           </div>
 
           {/* Super Apply Now Button */}

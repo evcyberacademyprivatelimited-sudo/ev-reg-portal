@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered } from 'lucide-react';
+import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered, Tag } from 'lucide-react';
 import { Course, CourseStatus } from '../../types';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -18,6 +18,7 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
   // Form states based on requirements:
   // - Course Name
   // - Short Description
+  // - Pricing (Original Price & Now Price)
   // - Duration
   // - Learning Mode
   // - Course Image
@@ -26,6 +27,12 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
   // - Publish / Hide Course
   const [courseName, setCourseName] = useState(course?.title || '');
   const [shortDescription, setShortDescription] = useState(course?.summary || '');
+  const [nowPrice, setNowPrice] = useState<number | string>(
+    course?.fee_amount !== undefined ? course.fee_amount : 499
+  );
+  const [originalPrice, setOriginalPrice] = useState<number | string>(
+    course?.original_price !== undefined ? course.original_price : 4999
+  );
   const [durationWeeks, setDurationWeeks] = useState(course?.duration_weeks || 12);
   const [learningMode, setLearningMode] = useState(course?.learning_mode || course?.tagline || 'Live Online');
   const [bannerText, setBannerText] = useState(course?.badge_text || 'Professional Certification Track');
@@ -55,12 +62,13 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
       description: shortDescription.trim(),
       tagline: learningMode.trim(),
       learning_mode: learningMode.trim(),
+      fee_amount: Number(nowPrice) || 0,
+      original_price: Number(originalPrice) || 0,
       badge_text: bannerText.trim() || 'Professional Certification Track',
       sort_order: Number(sortOrder) || 1,
       duration_weeks: Number(durationWeeks) || 12,
       hours_per_week: course?.hours_per_week || 8,
       level: course?.level || 'Intermediate',
-      fee_amount: course?.fee_amount || 0,
       currency: 'INR',
       status: (isPublished ? 'published' : 'draft') as CourseStatus,
       featured: course?.featured ?? true,
@@ -148,7 +156,69 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
             </p>
           </div>
 
-          {/* 3. Duration & 4. Learning Mode Row */}
+          {/* 3. Course Pricing (Original Price & Now Price) */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-red-600" />
+                Course Pricing (₹ INR)
+              </span>
+              {Number(originalPrice) > Number(nowPrice) && Number(originalPrice) > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10px] font-mono font-bold">
+                  {Math.round(((Number(originalPrice) - Number(nowPrice)) / Number(originalPrice)) * 100)}% DISCOUNT
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Original Price (₹ MRP)
+                </label>
+                <div className="relative">
+                  <span className="font-mono font-bold text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 4999"
+                    value={originalPrice}
+                    onChange={(e) => setOriginalPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Displayed with strikethrough (Original Price)
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Now Price (₹ Current Fee) <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="font-mono font-bold text-red-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    placeholder="e.g. 499"
+                    value={nowPrice}
+                    onChange={(e) => setNowPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-mono font-black focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Active fee students pay (Now Price)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Duration & 5. Learning Mode Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">

@@ -12,6 +12,7 @@ export const INITIAL_COURSES: Course[] = [
     duration_weeks: 12,
     hours_per_week: 10,
     fee_amount: 49999,
+    original_price: 99999,
     currency: 'INR',
     status: 'published',
     featured: true,
@@ -115,6 +116,7 @@ export const INITIAL_COURSES: Course[] = [
     duration_weeks: 16,
     hours_per_week: 12,
     fee_amount: 64999,
+    original_price: 129999,
     currency: 'INR',
     status: 'published',
     featured: true,
@@ -218,6 +220,7 @@ export const INITIAL_COURSES: Course[] = [
     duration_weeks: 10,
     hours_per_week: 8,
     fee_amount: 42999,
+    original_price: 84999,
     currency: 'INR',
     status: 'published',
     featured: false,
@@ -310,6 +313,7 @@ export const INITIAL_COURSES: Course[] = [
     duration_weeks: 8,
     hours_per_week: 6,
     fee_amount: 29999,
+    original_price: 59999,
     currency: 'INR',
     status: 'published',
     featured: false,
@@ -400,6 +404,7 @@ export const INITIAL_COURSES: Course[] = [
     learning_mode: 'Live Daily Sessions & Hands-on Labs',
     hours_per_week: 10,
     fee_amount: 499,
+    original_price: 4999,
     currency: 'INR',
     status: 'published',
     featured: true,
@@ -550,6 +555,8 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   quick_btn2_enabled: true,
   // Default card banner text (Admin editable)
   default_card_banner_text: 'Professional Certification Track',
+  // Intro video section visibility (On / Off)
+  show_intro_video: true,
 };
 
 export const INITIAL_STAFF: UserProfile[] = [

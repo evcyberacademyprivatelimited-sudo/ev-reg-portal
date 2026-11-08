@@ -56,6 +56,9 @@ export const AdminSettingsPage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState(
     currentHeroVideo?.youtube_url || 'https://www.youtube.com/watch?v=inWWhr5tnEA'
   );
+  const [showIntroVideo, setShowIntroVideo] = useState(
+    siteSettings.show_intro_video !== false
+  );
 
   const [isSavingButtons, setIsSavingButtons] = useState(false);
   const [isSavingContact, setIsSavingContact] = useState(false);
@@ -87,32 +90,35 @@ export const AdminSettingsPage: React.FC = () => {
 
   const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoUrl.trim()) return;
-
     setIsSavingVideo(true);
 
-    // Save or update primary video
-    const videoPayload = {
-      ...(currentHeroVideo?.id ? { id: currentHeroVideo.id } : {}),
-      title: 'EV Cyber Academy Overview',
-      youtube_url: videoUrl.trim(),
-      youtube_video_id: videoUrl.trim(),
-      placement: 'hero' as const,
-      pinned_homepage: true,
-      is_active: true,
-      autoplay: false,
-      muted_autoplay: true,
-      show_controls: true,
-    };
+    // 1. Update siteSettings for intro video section visibility (On / Off)
+    await updateSiteSettings({ show_intro_video: showIntroVideo });
 
-    const res = await saveVideo(videoPayload);
-    setIsSavingVideo(false);
+    // 2. Save or update primary video if url is provided
+    if (videoUrl.trim()) {
+      const videoPayload = {
+        ...(currentHeroVideo?.id ? { id: currentHeroVideo.id } : {}),
+        title: 'EV Cyber Academy Overview',
+        youtube_url: videoUrl.trim(),
+        youtube_video_id: videoUrl.trim(),
+        placement: 'hero' as const,
+        pinned_homepage: true,
+        is_active: showIntroVideo,
+        autoplay: false,
+        muted_autoplay: true,
+        show_controls: true,
+      };
 
-    if (res.success) {
-      success('Promotional video updated.');
-    } else {
-      notifyError('Failed to update video', res.error);
+      await saveVideo(videoPayload);
     }
+
+    setIsSavingVideo(false);
+    success(
+      showIntroVideo
+        ? 'Introduction video section enabled and updated.'
+        : 'Introduction video section turned OFF (hidden from website).'
+    );
   };
 
   const isConnected = isSupabaseConfigured();
@@ -331,6 +337,37 @@ export const AdminSettingsPage: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveVideo} className="space-y-4 text-xs">
+            {/* Intro Video Section ON / OFF Toggle */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      showIntroVideo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                    }`}
+                  />
+                  Intro Video Section: {showIntroVideo ? 'ON (Visible on Website)' : 'OFF (Hidden from Website)'}
+                </span>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {showIntroVideo
+                    ? 'The promotional video section is currently shown on the single-page website.'
+                    : 'The promotional video section is turned OFF and hidden from the website.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowIntroVideo(!showIntroVideo)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shrink-0 ${
+                  showIntroVideo
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-800 hover:bg-slate-900 text-slate-200'
+                }`}
+              >
+                <span>{showIntroVideo ? 'Turn Video OFF' : 'Turn Video ON'}</span>
+              </button>
+            </div>
+
             <div>
               <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                 YouTube Video URL or Video ID
@@ -339,7 +376,7 @@ export const AdminSettingsPage: React.FC = () => {
                 <Play className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  required
+                  required={showIntroVideo}
                   placeholder="https://www.youtube.com/watch?v=... or Video ID"
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
@@ -358,7 +395,7 @@ export const AdminSettingsPage: React.FC = () => {
                 className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                <span>{isSavingVideo ? 'Updating...' : 'Update Video'}</span>
+                <span>{isSavingVideo ? 'Updating...' : 'Update Video Settings'}</span>
               </button>
             </div>
           </form>

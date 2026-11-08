@@ -227,35 +227,37 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          2. INTRODUCTION / PROMOTIONAL VIDEO
+          2. INTRODUCTION / PROMOTIONAL VIDEO (ADMIN TOGGLEABLE ON/OFF)
       ========================================================================== */}
-      <section id="overview" className="py-14 sm:py-20 bg-[#060a14] border-b border-slate-800/80 scroll-mt-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ef444405_1px,transparent_1px),linear-gradient(to_bottom,#ef444405_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-red-500">
-              Overview
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Introduction to EV Cyber Academy
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-              Get an inside look at EV Cyber Academy&apos;s practical training methodology, cyber range labs, and technical programs.
-            </p>
-          </div>
+      {siteSettings.show_intro_video !== false && (
+        <section id="overview" className="py-14 sm:py-20 bg-[#060a14] border-b border-slate-800/80 scroll-mt-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ef444405_1px,transparent_1px),linear-gradient(to_bottom,#ef444405_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
+          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div className="text-center space-y-2">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-red-500">
+                Overview
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Introduction to EV Cyber Academy
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+                Get an inside look at EV Cyber Academy&apos;s practical training methodology, cyber range labs, and technical programs.
+              </p>
+            </div>
 
-          <div className="p-2 sm:p-3 rounded-3xl bg-[#090d16] border border-slate-800/90 shadow-2xl ring-1 ring-slate-800">
-            <YouTubeEmbed
-              urlOrId={videoUrl}
-              title={heroVideo?.title || 'EV Cyber Academy Overview'}
-              description={heroVideo?.description || 'Introduction to practical cybersecurity training at EV Cyber Academy'}
-              autoplay={false}
-              muted={true}
-              showControls={true}
-            />
+            <div className="p-2 sm:p-3 rounded-3xl bg-[#090d16] border border-slate-800/90 shadow-2xl ring-1 ring-slate-800">
+              <YouTubeEmbed
+                urlOrId={videoUrl}
+                title={heroVideo?.title || 'EV Cyber Academy Overview'}
+                description={heroVideo?.description || 'Introduction to practical cybersecurity training at EV Cyber Academy'}
+                autoplay={false}
+                muted={true}
+                showControls={true}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* =========================================================================
           3. SIMPLE CONTACT INFORMATION

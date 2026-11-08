@@ -230,6 +230,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Load Site Settings & Course Display Order first
       let orderMap: Record<string, number> = {};
+      let pricingMap: Record<string, { original_price?: number; now_price?: number }> = {};
       const { data: dbSettings } = await supabase.from('site_settings').select('*');
 
       if (dbSettings && dbSettings.length > 0) {
@@ -238,6 +239,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dbSettings.forEach((row) => {
             if (row.key === 'course_display_order' && row.value) {
               orderMap = (row.value.order || row.value) as Record<string, number>;
+            }
+            if (row.key === 'course_pricing' && row.value) {
+              pricingMap = (row.value.pricing || row.value) as Record<string, { original_price?: number; now_price?: number }>;
+            }
+            if (row.key === 'intro_video_settings' && row.value) {
+              updated.show_intro_video = row.value.is_enabled !== undefined ? Boolean(row.value.is_enabled) : updated.show_intro_video;
             }
             if (row.key === 'hero_content' && row.value) {
               updated.hero_badge = row.value.badge || updated.hero_badge;
@@ -279,10 +286,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!courseErr && dbCourses) {
         const sorted = (dbCourses as Course[])
-          .map((c, idx) => ({
-            ...c,
-            sort_order: orderMap[c.id] !== undefined ? Number(orderMap[c.id]) : (idx + 1),
-          }))
+          .map((c, idx) => {
+            const coursePricing = pricingMap[c.id];
+            const mockMatch = INITIAL_COURSES.find((mc) => mc.slug === c.slug || mc.title === c.title);
+            const origPrice = coursePricing?.original_price !== undefined
+              ? Number(coursePricing.original_price)
+              : (c.original_price ?? mockMatch?.original_price ?? 0);
+            const feeAmt = coursePricing?.now_price !== undefined
+              ? Number(coursePricing.now_price)
+              : c.fee_amount;
+
+            return {
+              ...c,
+              sort_order: orderMap[c.id] !== undefined ? Number(orderMap[c.id]) : (idx + 1),
+              original_price: origPrice,
+              fee_amount: feeAmt,
+            };
+          })
           .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
         setCourses(sorted);
       }
@@ -373,6 +393,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = new Date().toISOString();
 
     const targetSortOrder = courseData.sort_order;
+    const targetOriginalPrice = courseData.original_price;
     const currentCourse = courses.find((c) => c.id === courseData.id);
 
     const preparedCourse: Course = {
@@ -393,6 +414,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       duration_weeks: Number(courseData.duration_weeks) || 12,
       hours_per_week: Number(courseData.hours_per_week) || 8,
       fee_amount: Number(courseData.fee_amount) || 0,
+      original_price:
+        targetOriginalPrice !== undefined
+          ? Number(targetOriginalPrice)
+          : (currentCourse?.original_price || 0),
       currency: courseData.currency || 'INR',
       status: courseData.status || 'published',
       featured: Boolean(courseData.featured),
@@ -428,22 +453,46 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
 
+        if (targetOriginalPrice !== undefined || courseData.fee_amount !== undefined) {
+          const currentPricingMap: Record<string, { original_price?: number; now_price?: number }> = {};
+          courses.forEach((c) => {
+            currentPricingMap[c.id] = {
+              original_price: c.original_price || 0,
+              now_price: c.fee_amount || 0,
+            };
+          });
+          currentPricingMap[preparedCourse.id] = {
+            original_price: preparedCourse.original_price || 0,
+            now_price: preparedCourse.fee_amount || 0,
+          };
+
+          await supabase.from('site_settings').upsert({
+            key: 'course_pricing',
+            value: { pricing: currentPricingMap },
+            updated_at: new Date().toISOString(),
+          });
+        }
+
         if (isNew) {
-          // Omit id and sort_order so PostgreSQL automatically assigns default uuid_generate_v4() and avoids column errors
-          const { id: _omitId, sort_order: _omitSortOrder, ...insertPayload } = preparedCourse;
+          // Omit id, sort_order, and original_price so PostgreSQL automatically assigns default uuid_generate_v4() and avoids column errors
+          const { id: _omitId, sort_order: _omitSortOrder, original_price: _omitOrigPrice, ...insertPayload } = preparedCourse;
           const { data, error } = await supabase.from('courses').insert([insertPayload]).select().single();
           if (error) return { success: false, error: error.message };
           if (data) {
-            const courseWithOrder = { ...data, sort_order: preparedCourse.sort_order } as Course;
+            const courseWithMeta = {
+              ...data,
+              sort_order: preparedCourse.sort_order,
+              original_price: preparedCourse.original_price,
+            } as Course;
             setCourses((prev) => {
-              const updated = [courseWithOrder, ...prev.filter((c) => c.id !== courseWithOrder.id)];
+              const updated = [courseWithMeta, ...prev.filter((c) => c.id !== courseWithMeta.id)];
               return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
             });
-            return { success: true, data: courseWithOrder };
+            return { success: true, data: courseWithMeta };
           }
         } else {
-          // Omit sort_order from update payload for PostgreSQL
-          const { sort_order: _omitSortOrder, ...updatePayload } = preparedCourse;
+          // Omit sort_order and original_price from update payload for PostgreSQL
+          const { sort_order: _omitSortOrder, original_price: _omitOrigPrice, ...updatePayload } = preparedCourse;
           const { data, error } = await supabase
             .from('courses')
             .update(updatePayload)
@@ -452,7 +501,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
           if (error) return { success: false, error: error.message };
           if (data) {
-            const updatedCourse = { ...data, sort_order: preparedCourse.sort_order } as Course;
+            const updatedCourse = {
+              ...data,
+              sort_order: preparedCourse.sort_order,
+              original_price: preparedCourse.original_price,
+            } as Course;
             setCourses((prev) => {
               const updated = prev.map((c) => (c.id === data.id ? updatedCourse : c));
               return updated.sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
@@ -1130,6 +1183,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           key: 'course_card_settings',
           value: {
             banner_text: updated.default_card_banner_text,
+          },
+          updated_at: new Date().toISOString(),
+        });
+
+        await supabase.from('site_settings').upsert({
+          key: 'intro_video_settings',
+          value: {
+            is_enabled: updated.show_intro_video !== false,
           },
           updated_at: new Date().toISOString(),
         });

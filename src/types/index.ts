@@ -43,6 +43,7 @@ export interface Course {
   image_url?: string;
   hours_per_week: number;
   fee_amount: number;
+  original_price?: number;
   currency: string;
   status: CourseStatus;
   featured: boolean;
@@ -211,5 +212,7 @@ export interface SiteSettings {
   quick_btn2_enabled?: boolean;
   // Admin-editable course card banner text
   default_card_banner_text?: string;
+  // Intro video section toggle (On / Off)
+  show_intro_video?: boolean;
 }
 

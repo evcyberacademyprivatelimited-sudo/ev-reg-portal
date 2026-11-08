@@ -40,13 +40,15 @@ export const Header: React.FC = () => {
             >
               Courses &amp; Programs
             </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection('overview')}
-              className="text-sm font-semibold text-slate-300 hover:text-white hover:text-red-400 transition cursor-pointer"
-            >
-              Overview Video
-            </button>
+            {siteSettings.show_intro_video !== false && (
+              <button
+                type="button"
+                onClick={() => scrollToSection('overview')}
+                className="text-sm font-semibold text-slate-300 hover:text-white hover:text-red-400 transition cursor-pointer"
+              >
+                Overview Video
+              </button>
+            )}
             <button
               type="button"
               onClick={() => scrollToSection('contact')}
@@ -119,13 +121,15 @@ export const Header: React.FC = () => {
             >
               Courses &amp; Programs
             </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection('overview')}
-              className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-900 hover:text-red-400 rounded-lg transition"
-            >
-              Overview Video
-            </button>
+            {siteSettings.show_intro_video !== false && (
+              <button
+                type="button"
+                onClick={() => scrollToSection('overview')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-900 hover:text-red-400 rounded-lg transition"
+              >
+                Overview Video
+              </button>
+            )}
             <button
               type="button"
               onClick={() => scrollToSection('contact')}

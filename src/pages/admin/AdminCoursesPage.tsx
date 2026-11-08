@@ -102,6 +102,7 @@ export const AdminCoursesPage: React.FC = () => {
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                     <th className="py-3.5 px-4 w-44">Display Order</th>
                     <th className="py-3.5 px-4">Course Name</th>
+                    <th className="py-3.5 px-4">Price (Now / Original)</th>
                     <th className="py-3.5 px-4">Duration</th>
                     <th className="py-3.5 px-4">Learning Mode</th>
                     <th className="py-3.5 px-4">Status</th>
@@ -160,6 +161,19 @@ export const AdminCoursesPage: React.FC = () => {
                             <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 font-normal">
                               {course.summary}
                             </p>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="font-mono">
+                            <span className="font-black text-slate-900 text-xs">
+                              ₹{(course.fee_amount || 0).toLocaleString('en-IN')}
+                            </span>
+                            {course.original_price && course.original_price > (course.fee_amount || 0) ? (
+                              <div className="text-[11px] text-slate-400 line-through">
+                                ₹{course.original_price.toLocaleString('en-IN')}
+                              </div>
+                            ) : null}
                           </div>
                         </td>
 

@@ -44,14 +44,16 @@ export const Footer: React.FC = () => {
                   <ArrowRight className="w-3 h-3 text-red-500" />
                 </button>
               </li>
-              <li>
-                <a
-                  href="#overview"
-                  className="text-slate-400 hover:text-white transition"
-                >
-                  Overview Video
-                </a>
-              </li>
+              {siteSettings.show_intro_video !== false && (
+                <li>
+                  <a
+                    href="#overview"
+                    className="text-slate-400 hover:text-white transition"
+                  >
+                    Overview Video
+                  </a>
+                </li>
+              )}
               <li>
                 <a
                   href="#contact"
