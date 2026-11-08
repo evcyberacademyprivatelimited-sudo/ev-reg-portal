@@ -194,6 +194,7 @@ export interface SiteSettings {
   contact_phone: string;
   contact_email: string;
   contact_whatsapp: string;
+  contact_address?: string;
   counseling_hours: string;
 }
 

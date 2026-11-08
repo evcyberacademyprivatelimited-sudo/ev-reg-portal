@@ -498,9 +498,9 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   primary_cta_text: 'Explore Programs & Apply',
   secondary_cta_text: 'Watch Cyber Range Demo',
   trust_badge_text: 'Live Enterprise Cyber Range & Security Operations Training',
-  contact_phone: '+91 98765 43210',
+  contact_phone: '',
   contact_email: 'admissions@evcyberacademy.com',
-  contact_whatsapp: '+919876543210',
+  contact_whatsapp: '',
   counseling_hours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
 };
 

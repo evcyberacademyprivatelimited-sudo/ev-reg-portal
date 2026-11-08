@@ -15,7 +15,7 @@ export const CtaBanner: React.FC = () => {
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/20 border border-white/20 text-white text-xs font-bold uppercase tracking-wider">
           <ShieldAlert className="w-4 h-4 text-white" />
-          <span>Next Cohort Registration Closing Soon</span>
+          <span>Admissions Open For Upcoming Cohorts</span>
         </div>
 
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">

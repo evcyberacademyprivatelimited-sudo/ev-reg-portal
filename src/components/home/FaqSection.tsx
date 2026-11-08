@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
+import { ChevronDown, HelpCircle, MessageCircle, Mail } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
 export const FaqSection: React.FC = () => {
@@ -68,15 +68,25 @@ export const FaqSection: React.FC = () => {
             <h4 className="text-sm font-bold text-slate-900">Have a specific question about your technical background?</h4>
             <p className="text-xs text-slate-500 mt-0.5">Our academic counselors will evaluate your profile and advise you honestly.</p>
           </div>
-          <a
-            href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20questions%20regarding%20course%20prerequisites.`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center gap-2 shrink-0 shadow-sm"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>Ask Academic Counselor</span>
-          </a>
+          {siteSettings.contact_whatsapp ? (
+            <a
+              href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20questions%20regarding%20course%20prerequisites.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center gap-2 shrink-0 shadow-sm"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Ask Academic Counselor</span>
+            </a>
+          ) : (
+            <a
+              href={`mailto:${siteSettings.contact_email}?subject=Course%20Prerequisites%20Inquiry`}
+              className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-black text-white font-semibold text-xs transition flex items-center gap-2 shrink-0 shadow-sm"
+            >
+              <Mail className="w-4 h-4 text-red-500" />
+              <span>Contact Admissions Desk</span>
+            </a>
+          )}
         </div>
       </div>
     </section>

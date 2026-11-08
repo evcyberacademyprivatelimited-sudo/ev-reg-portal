@@ -10,7 +10,8 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, user } = useAuth();
-  const { siteSettings } = useData();
+  const { siteSettings, getHeroVideo, testimonials } = useData();
+  const heroVideo = getHeroVideo();
 
   const handleCtaClick = (source: string) => {
     trackEvent('cta_click', undefined, {
@@ -21,9 +22,9 @@ export const Header: React.FC = () => {
 
   const navLinks = [
     { label: 'All Programs', path: '/programs' },
-    { label: 'Inside the War Room', path: '/#video-spotlight' },
+    ...(heroVideo ? [{ label: 'Inside the War Room', path: '/#video-spotlight' }] : []),
     { label: 'Curriculum & Labs', path: '/#methodology' },
-    { label: 'Corporate Alumni', path: '/#testimonials' },
+    ...(testimonials.some((t) => t.is_featured) ? [{ label: 'Alumni Feedback', path: '/#testimonials' }] : []),
     { label: 'FAQs', path: '/#faqs' },
   ];
 
@@ -35,15 +36,25 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-slate-300">
-              <strong className="text-white font-semibold">Q4 Cohort Registration Active:</strong> Limited batch seats for live enterprise cyber ranges.
+              <strong className="text-white font-semibold">Cohort Admissions Active:</strong> Hands-on training on enterprise cyber ranges.
             </span>
           </div>
 
           <div className="hidden md:flex items-center gap-4 text-slate-300">
-            <span className="flex items-center gap-1.5 hover:text-white transition">
-              <PhoneCall className="w-3.5 h-3.5 text-red-500" />
-              <span>Counselor Helpline: {siteSettings.contact_phone}</span>
-            </span>
+            {siteSettings.contact_phone ? (
+              <a
+                href={`tel:${siteSettings.contact_phone}`}
+                className="flex items-center gap-1.5 hover:text-white transition"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-red-500" />
+                <span>Admissions: {siteSettings.contact_phone}</span>
+              </a>
+            ) : (
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <Shield className="w-3.5 h-3.5 text-red-500" />
+                <span>Enterprise Cybersecurity Training &amp; Cyber Ranges</span>
+              </span>
+            )}
             {isAuthenticated && (
               <>
                 <span className="text-slate-600">|</span>
@@ -87,15 +98,17 @@ export const Header: React.FC = () => {
 
           {/* Action CTAs */}
           <div className="hidden sm:flex items-center gap-3">
-            <a
-              href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20would%20like%20to%20learn%20more%20about%20your%20upcoming%20cybersecurity%20cohorts.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-1.5"
-            >
-              <PhoneCall className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Chat with Counselor</span>
-            </a>
+            {siteSettings.contact_whatsapp && (
+              <a
+                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20would%20like%20to%20learn%20more%20about%20your%20upcoming%20cybersecurity%20cohorts.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-1.5"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Chat with Counselor</span>
+              </a>
+            )}
 
             <Link
               to="/register"
@@ -155,15 +168,17 @@ export const Header: React.FC = () => {
           </nav>
 
           <div className="pt-3 border-t border-slate-100 space-y-2">
-            <a
-              href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20EV%20Cyber%20Academy`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg"
-            >
-              <PhoneCall className="w-4 h-4 text-emerald-600" />
-              <span>WhatsApp Academic Desk</span>
-            </a>
+            {siteSettings.contact_whatsapp && (
+              <a
+                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20EV%20Cyber%20Academy`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg"
+              >
+                <PhoneCall className="w-4 h-4 text-emerald-600" />
+                <span>WhatsApp Academic Desk</span>
+              </a>
+            )}
 
             <Link
               to="/register"

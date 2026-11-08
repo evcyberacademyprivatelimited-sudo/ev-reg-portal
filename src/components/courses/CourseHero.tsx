@@ -37,8 +37,6 @@ export const CourseHero: React.FC<CourseHeroProps> = ({ course, video }) => {
     'All Levels': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
   }[course.level] || 'bg-slate-500/20 text-slate-300 border-slate-500/30';
 
-  const seatsLeft = course.seats_remaining ?? 6;
-
   return (
     <section className="relative bg-slate-950 text-white pt-12 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,10 +55,17 @@ export const CourseHero: React.FC<CourseHeroProps> = ({ course, video }) => {
                 {course.level} Level
               </span>
 
-              <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                <span>Only {seatsLeft} Seats Remaining</span>
-              </span>
+              {course.seats_remaining != null && course.seats_remaining > 0 ? (
+                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  <span>{course.seats_remaining} Seats Remaining</span>
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Cohort Admissions Active</span>
+                </span>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
@@ -125,15 +130,17 @@ export const CourseHero: React.FC<CourseHeroProps> = ({ course, video }) => {
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
 
-              <a
-                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi,%20I%20have%20questions%20about%20the%20${encodeURIComponent(course.title)}%20program.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-5 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm transition flex items-center justify-center gap-2"
-              >
-                <PhoneCall className="w-4 h-4 text-emerald-400" />
-                <span>Talk to Admissions Lead</span>
-              </a>
+              {siteSettings.contact_whatsapp && (
+                <a
+                  href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi,%20I%20have%20questions%20about%20the%20${encodeURIComponent(course.title)}%20program.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-5 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm transition flex items-center justify-center gap-2"
+                >
+                  <PhoneCall className="w-4 h-4 text-emerald-400" />
+                  <span>Talk to Admissions Lead</span>
+                </a>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-xs text-slate-400">

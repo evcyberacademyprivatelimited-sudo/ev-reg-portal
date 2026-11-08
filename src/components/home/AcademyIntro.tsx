@@ -14,7 +14,7 @@ export const AcademyIntro: React.FC = () => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-              Built by Enterprise Practitioners. Engineered for Zero Theoretical Bullshit.
+              Built by Enterprise Practitioners. Engineered for Real-World Security Operations.
             </h2>
 
             <p className="text-slate-600 text-base leading-relaxed">

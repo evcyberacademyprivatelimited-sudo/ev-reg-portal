@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { RegistrationForm } from '../components/registration/RegistrationForm';
-import { Shield, CheckCircle2, Clock, Award, PhoneCall, MessageCircle } from 'lucide-react';
+import { Shield, CheckCircle2, Clock, Award, PhoneCall, MessageCircle, Mail } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { trackEvent } from '../lib/analytics';
 
@@ -85,22 +85,34 @@ export const RegisterPage: React.FC = () => {
                 Connect directly with our admissions lead via WhatsApp or phone.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                <a
-                  href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20an%20admissions%20question.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp Desk</span>
-                </a>
-                <a
-                  href={`tel:${siteSettings.contact_phone}`}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition"
-                >
-                  <PhoneCall className="w-3.5 h-3.5 text-red-400" />
-                  <span>Call {siteSettings.contact_phone}</span>
-                </a>
+                {siteSettings.contact_whatsapp && (
+                  <a
+                    href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20an%20admissions%20question.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>WhatsApp Desk</span>
+                  </a>
+                )}
+                {siteSettings.contact_phone ? (
+                  <a
+                    href={`tel:${siteSettings.contact_phone}`}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition"
+                  >
+                    <PhoneCall className="w-3.5 h-3.5 text-red-400" />
+                    <span>Call {siteSettings.contact_phone}</span>
+                  </a>
+                ) : (
+                  <a
+                    href={`mailto:${siteSettings.contact_email}?subject=Admissions%20Inquiry`}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-red-400" />
+                    <span>{siteSettings.contact_email}</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>

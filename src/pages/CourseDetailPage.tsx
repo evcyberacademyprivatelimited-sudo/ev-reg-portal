@@ -19,6 +19,7 @@ import {
   PhoneCall,
   ArrowRight,
   MessageCircle,
+  Mail,
 } from 'lucide-react';
 
 export const CourseDetailPage: React.FC = () => {
@@ -120,23 +121,35 @@ export const CourseDetailPage: React.FC = () => {
               </p>
 
               <div className="pt-1 flex flex-col gap-2">
-                <a
-                  href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20questions%20regarding%20${encodeURIComponent(course.title)}.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Chat on WhatsApp ({siteSettings.contact_phone})</span>
-                </a>
+                {siteSettings.contact_whatsapp && (
+                  <a
+                    href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20have%20questions%20regarding%20${encodeURIComponent(course.title)}.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Chat on WhatsApp</span>
+                  </a>
+                )}
 
-                <a
-                  href={`tel:${siteSettings.contact_phone}`}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2"
-                >
-                  <PhoneCall className="w-3.5 h-3.5 text-red-500" />
-                  <span>Call Admissions Lead Directly</span>
-                </a>
+                {siteSettings.contact_phone ? (
+                  <a
+                    href={`tel:${siteSettings.contact_phone}`}
+                    className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2"
+                  >
+                    <PhoneCall className="w-3.5 h-3.5 text-red-500" />
+                    <span>Call Admissions Lead ({siteSettings.contact_phone})</span>
+                  </a>
+                ) : (
+                  <a
+                    href={`mailto:${siteSettings.contact_email}?subject=Inquiry%20regarding%20${encodeURIComponent(course.title)}`}
+                    className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-red-500" />
+                    <span>Email Admissions Desk</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>

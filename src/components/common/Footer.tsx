@@ -85,14 +85,16 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-xs text-slate-400">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span>Cyber Defense Complex, Tech Corridor, Bangalore & Online Global Cohorts</span>
+                <span>{siteSettings.contact_address || 'Bangalore & Online Global Cohorts'}</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-red-500 shrink-0" />
-                <a href={`tel:${siteSettings.contact_phone}`} className="hover:text-white transition">
-                  {siteSettings.contact_phone}
-                </a>
-              </li>
+              {siteSettings.contact_phone && (
+                <li className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-red-500 shrink-0" />
+                  <a href={`tel:${siteSettings.contact_phone}`} className="hover:text-white transition">
+                    {siteSettings.contact_phone}
+                  </a>
+                </li>
+              )}
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-red-500 shrink-0" />
                 <a href={`mailto:${siteSettings.contact_email}`} className="hover:text-white transition">

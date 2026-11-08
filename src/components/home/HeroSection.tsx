@@ -53,13 +53,15 @@ export const HeroSection: React.FC = () => {
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Link>
 
-            <a
-              href="#video-spotlight"
-              className="w-full sm:w-auto px-6 py-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-base transition flex items-center justify-center gap-2"
-            >
-              <Play className="w-4 h-4 text-red-400 fill-current" />
-              <span>{siteSettings.secondary_cta_text}</span>
-            </a>
+            {heroVideo && (
+              <a
+                href="#video-spotlight"
+                className="w-full sm:w-auto px-6 py-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-base transition flex items-center justify-center gap-2"
+              >
+                <Play className="w-4 h-4 text-red-400 fill-current" />
+                <span>{siteSettings.secondary_cta_text}</span>
+              </a>
+            )}
           </div>
 
           {/* Trust bullet markers */}

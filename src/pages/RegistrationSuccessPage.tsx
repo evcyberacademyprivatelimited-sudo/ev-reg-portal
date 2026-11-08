@@ -113,15 +113,25 @@ export const RegistrationSuccessPage: React.FC = () => {
 
           {/* Action CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20just%20submitted%20my%20application%20with%20reference%20${encodeURIComponent(leadNum)}.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>Connect on WhatsApp Now</span>
-            </a>
+            {siteSettings.contact_whatsapp ? (
+              <a
+                href={`https://wa.me/${siteSettings.contact_whatsapp.replace(/[^0-9]/g, '')}?text=Hi%20EV%20Cyber%20Academy,%20I%20just%20submitted%20my%20application%20with%20reference%20${encodeURIComponent(leadNum)}.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Connect on WhatsApp Now</span>
+              </a>
+            ) : (
+              <a
+                href={`mailto:${siteSettings.contact_email}?subject=Application%20Reference%20${encodeURIComponent(leadNum)}`}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+              >
+                <FileText className="w-4 h-4 text-red-500" />
+                <span>Email Admissions Desk</span>
+              </a>
+            )}
 
             <Link
               to="/"

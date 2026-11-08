@@ -35,7 +35,7 @@ export const StickyCtaBar: React.FC<StickyCtaBarProps> = ({
 
   const targetUrl = course ? `/register?course=${course.id}` : '/register';
   const displayTitle = customTitle || course?.title || 'EV Cyber Defense Cohort';
-  const seatsLeft = course?.seats_remaining || 7;
+  const hasRemainingSeats = course?.seats_remaining != null && course.seats_remaining > 0;
 
   const handleClick = () => {
     trackEvent('cta_click', course?.id, { source: 'sticky_bar' });
@@ -57,10 +57,17 @@ export const StickyCtaBar: React.FC<StickyCtaBarProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold truncate text-white">{displayTitle}</h4>
-              <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded">
-                <Users className="w-3 h-3" />
-                <span>{seatsLeft} seats left</span>
-              </span>
+              {hasRemainingSeats ? (
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded">
+                  <Users className="w-3 h-3" />
+                  <span>{course?.seats_remaining} seats remaining</span>
+                </span>
+              ) : (
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Admissions Active</span>
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">

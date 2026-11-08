@@ -26,6 +26,7 @@ export const AdminSettingsPage: React.FC = () => {
     contact_phone: siteSettings.contact_phone,
     contact_email: siteSettings.contact_email,
     contact_whatsapp: siteSettings.contact_whatsapp,
+    contact_address: siteSettings.contact_address || '',
     counseling_hours: siteSettings.counseling_hours,
   });
 
@@ -164,6 +165,21 @@ export const AdminSettingsPage: React.FC = () => {
                   setContactForm({ ...contactForm, counseling_hours: e.target.value })
                 }
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Academy Address / Location
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Cyber Defense Center, Bangalore & Online Worldwide"
+                value={contactForm.contact_address}
+                onChange={(e) =>
+                  setContactForm({ ...contactForm, contact_address: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-semibold"
               />
             </div>
 
