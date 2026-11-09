@@ -20,7 +20,7 @@ const LOCAL_AUTH_KEY = 'ev_active_user_session';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [staffList, setStaffList] = useState<UserProfile[]>(INITIAL_STAFF);
+  const [staffList, setStaffList] = useState<UserProfile[]>(() => isSupabaseConfigured() ? [] : INITIAL_STAFF);
 
   useEffect(() => {
     async function initAuth() {

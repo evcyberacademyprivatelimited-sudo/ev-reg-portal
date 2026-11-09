@@ -34,6 +34,11 @@ const generateUuid = (): string => {
   });
 };
 
+export const isValidUuid = (val?: string | null): boolean => {
+  if (!val) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val);
+};
+
 interface DuplicateCheckResult {
   isDuplicate: boolean;
   existingLead?: Lead;
@@ -676,7 +681,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // In Supabase mode, execute the secure RPC function (SECURITY DEFINER)
     // This returns boolean true/false and strictly NEVER exposes student registrations to public callers
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && isValidUuid(courseId)) {
       try {
         const { data: isDup, error } = await supabase.rpc('check_duplicate_registration', {
           p_email: cleanEmail,
@@ -725,8 +730,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     utm_term?: string;
     utm_content?: string;
   }): Promise<{ success: boolean; lead?: Lead; isDuplicate?: boolean; error?: string }> => {
+    // Resolve course reference
+    const courseObj = courses.find((c) => c.id === leadData.course_id || c.slug === leadData.course_id);
+    const resolvedCourseId = courseObj && isValidUuid(courseObj.id)
+      ? courseObj.id
+      : (isValidUuid(leadData.course_id) ? leadData.course_id : (courses.find((c) => isValidUuid(c.id))?.id || leadData.course_id));
+
     // 1. Anti-duplicate protection check
-    const dupCheck = await checkDuplicateLead(leadData.email, leadData.course_id);
+    const dupCheck = await checkDuplicateLead(leadData.email, resolvedCourseId);
     if (dupCheck.isDuplicate) {
       return {
         success: false,
@@ -736,28 +747,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    const courseObj = courses.find((c) => c.id === leadData.course_id);
     const now = new Date().toISOString();
+    const generatedLeadId = generateUuid();
     const nextLeadNum = 'EV-' + (1000 + leads.length + 1);
 
-    // Auto-assign to staff member if available
-    const availableStaff = staffList.length > 0 ? staffList[0] : null;
+    // Only assign if submitted by an authenticated staff member with a valid UUID;
+    // For public students, assigned_to is strictly null (unassigned incoming lead)
+    const validAssignedTo = (isAuthenticated && isValidUuid(user?.id)) ? user!.id : null;
+    const assignedStaffName = validAssignedTo ? (user?.full_name || 'Staff User') : 'Unassigned';
 
     const newLead: Lead = {
-      id: 'lead_' + Math.random().toString(36).substring(2, 10),
+      id: generatedLeadId,
       lead_number: nextLeadNum,
       full_name: leadData.full_name.trim(),
       email: leadData.email.trim().toLowerCase(),
       phone: leadData.phone.trim(),
-      course_id: leadData.course_id,
+      course_id: resolvedCourseId,
       course_title: courseObj?.title || 'Cybersecurity Program',
-      college_company: leadData.college_company.trim(),
-      experience_level: leadData.experience_level,
+      college_company: leadData.college_company.trim() || 'Not Specified',
+      experience_level: leadData.experience_level || 'Student / Fresher',
       status: 'New',
-      assigned_to: availableStaff?.id || null,
-      assigned_staff_name: availableStaff?.full_name || 'Unassigned',
+      assigned_to: validAssignedTo,
+      assigned_staff_name: assignedStaffName,
       next_follow_up_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      referral_source: leadData.referral_source || 'Direct Website',
+      referral_source: leadData.referral_source || 'Website Course Page',
       utm_source: leadData.utm_source || 'direct',
       utm_medium: leadData.utm_medium || 'organic',
       utm_campaign: leadData.utm_campaign || 'none',
@@ -770,48 +783,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (isSupabaseConfigured()) {
       try {
-        const { data, error } = await supabase
-          .from('leads')
-          .insert([
-            {
-              full_name: newLead.full_name,
-              email: newLead.email,
-              phone: newLead.phone,
-              course_id: newLead.course_id,
-              college_company: newLead.college_company,
-              experience_level: newLead.experience_level,
-              status: 'New',
-              assigned_to: newLead.assigned_to,
-              referral_source: newLead.referral_source,
-              utm_source: newLead.utm_source,
-              utm_medium: newLead.utm_medium,
-              utm_campaign: newLead.utm_campaign,
-              utm_term: newLead.utm_term,
-              utm_content: newLead.utm_content,
-            },
-          ])
-          .select()
-          .single();
+        if (!isValidUuid(resolvedCourseId)) {
+          return { success: false, error: 'Invalid course reference. Please select an available course.' };
+        }
+
+        const insertPayload = {
+          id: generatedLeadId,
+          lead_number: nextLeadNum,
+          full_name: newLead.full_name,
+          email: newLead.email,
+          phone: newLead.phone,
+          course_id: resolvedCourseId,
+          college_company: newLead.college_company,
+          experience_level: newLead.experience_level,
+          status: 'New' as const,
+          assigned_to: validAssignedTo, // null for public registrations; never pass hardcoded string IDs
+          referral_source: newLead.referral_source,
+          utm_source: newLead.utm_source,
+          utm_medium: newLead.utm_medium,
+          utm_campaign: newLead.utm_campaign,
+          utm_term: newLead.utm_term,
+          utm_content: newLead.utm_content,
+        };
+
+        const { error } = await supabase.from('leads').insert([insertPayload]);
 
         if (error) {
           return { success: false, error: error.message };
         }
 
-        const createdLead: Lead = {
-          ...(data as Lead),
-          course_title: courseObj?.title,
-          assigned_staff_name: availableStaff?.full_name,
-        };
-
-        setLeads((prev) => [createdLead, ...prev]);
+        setLeads((prev) => [newLead, ...prev]);
 
         // Track conversion event
-        await trackEvent('lead_submission', createdLead.course_id, {
-          lead_number: createdLead.lead_number,
-          experience_level: createdLead.experience_level,
+        await trackEvent('lead_submission', newLead.course_id, {
+          lead_number: newLead.lead_number,
+          experience_level: newLead.experience_level,
         });
 
-        return { success: true, lead: createdLead };
+        return { success: true, lead: newLead };
       } catch (err) {
         return { success: false, error: (err as Error).message };
       }
@@ -864,12 +873,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (error) return { success: false, error: error.message };
 
+        const validChangedBy = isValidUuid(user?.id) ? user!.id : null;
         await supabase.from('lead_status_history').insert([
           {
             lead_id: leadId,
             old_status: oldStatus,
             new_status: newStatus,
-            changed_by: user?.id,
+            changed_by: validChangedBy,
             changed_by_name: user?.full_name || 'Staff User',
             note: note || `Status changed from ${oldStatus} to ${newStatus}`,
           },
@@ -953,13 +963,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ success: boolean; error?: string }> => {
     const targetStaff = staffList.find((s) => s.id === staffId);
     const now = new Date().toISOString();
+    const validStaffId = isValidUuid(staffId) ? staffId : null;
+    const validAssignedBy = isValidUuid(user?.id) ? user!.id : null;
 
     if (isSupabaseConfigured()) {
       try {
         const { error } = await supabase
           .from('leads')
           .update({
-            assigned_to: staffId,
+            assigned_to: validStaffId,
             updated_at: now,
           })
           .eq('id', leadId);
@@ -969,8 +981,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await supabase.from('lead_assignments').insert([
           {
             lead_id: leadId,
-            assigned_by: user?.id,
-            assigned_to: staffId,
+            assigned_by: validAssignedBy,
+            assigned_to: validStaffId,
             notes: notes || 'Lead assigned',
           },
         ]);
@@ -1005,11 +1017,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addLeadNote = async (leadId: string, noteText: string): Promise<{ success: boolean; error?: string }> => {
     if (!noteText.trim()) return { success: false, error: 'Note cannot be blank.' };
     const now = new Date().toISOString();
+    const validAuthorId = isValidUuid(user?.id) ? user!.id : null;
 
     const newNote: LeadNote = {
       id: 'note_' + Math.random().toString(36).substring(2, 9),
       lead_id: leadId,
-      author_id: user?.id,
+      author_id: validAuthorId || undefined,
       author_name: user?.full_name || 'Administrator',
       note: noteText.trim(),
       created_at: now,
@@ -1022,7 +1035,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .insert([
             {
               lead_id: leadId,
-              author_id: user?.id,
+              author_id: validAuthorId,
               author_name: user?.full_name || 'Administrator',
               note: noteText.trim(),
             },

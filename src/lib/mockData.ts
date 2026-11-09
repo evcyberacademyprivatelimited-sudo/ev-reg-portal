@@ -561,7 +561,7 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
 
 export const INITIAL_STAFF: UserProfile[] = [
   {
-    id: 'u-admin-1',
+    id: '00000000-0000-4000-a000-000000000001',
     email: 'admin@evcyberacademy.com',
     full_name: 'Super Administrator',
     role: 'super_admin',
@@ -569,7 +569,7 @@ export const INITIAL_STAFF: UserProfile[] = [
     is_active: true,
   },
   {
-    id: 'u-staff-1',
+    id: '00000000-0000-4000-a000-000000000002',
     email: 'staff@evcyberacademy.com',
     full_name: 'Admissions Staff',
     role: 'staff',
