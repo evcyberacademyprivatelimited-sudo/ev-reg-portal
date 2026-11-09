@@ -88,6 +88,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           if (profile) {
             setUser(profile as UserProfile);
+          } else {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              full_name: session.user.user_metadata?.full_name || 'Staff User',
+              role: (session.user.user_metadata?.role as 'super_admin' | 'staff') || 'staff',
+              is_active: true,
+            });
           }
         } else {
           setUser(null);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Logo } from '../components/common/Logo';
 import { Lock, Mail, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
@@ -8,6 +9,7 @@ import { useNotification } from '../context/NotificationContext';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { signIn, isAuthenticated } = useAuth();
+  const { fetchLeads } = useData();
   const { error: notifyError, success } = useNotification();
 
   const [email, setEmail] = useState('');
@@ -28,12 +30,15 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     const result = await signIn(email, password);
-    setIsLoading(false);
 
     if (result.success) {
+      // Hydrate leads directly into memory before navigating
+      await fetchLeads();
+      setIsLoading(false);
       success('Logged in successfully.');
       navigate('/admin');
     } else {
+      setIsLoading(false);
       setErrorMessage(result.error || 'Authentication failed. Please verify credentials.');
       notifyError('Login failed', result.error);
     }

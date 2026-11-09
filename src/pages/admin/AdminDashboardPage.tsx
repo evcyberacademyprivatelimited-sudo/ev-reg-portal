@@ -20,6 +20,8 @@ import {
   FileText,
   Plus,
   AlertCircle,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -27,6 +29,9 @@ export const AdminDashboardPage: React.FC = () => {
   const {
     leads,
     courses,
+    isLoadingLeads,
+    leadsFetchError,
+    fetchLeads,
     updateLeadStatus,
     addLeadNote,
     getLeadNotes,
@@ -35,6 +40,11 @@ export const AdminDashboardPage: React.FC = () => {
     exportLeadsCsv,
   } = useData();
   const { success, error: notifyError } = useNotification();
+
+  // Always fetch latest backend leads on dashboard mount
+  React.useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -268,9 +278,33 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Database Sync Error Banner */}
+          {leadsFetchError && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>Backend Database Error: {leadsFetchError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchLeads()}
+                className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Retry Database Sync</span>
+              </button>
+            </div>
+          )}
+
           {/* Applications Table */}
           <div className="overflow-x-auto">
-            {filteredLeads.length === 0 ? (
+            {isLoadingLeads ? (
+              <div className="py-16 text-center text-slate-500 space-y-3">
+                <Loader2 className="w-8 h-8 mx-auto animate-spin text-red-600" />
+                <p className="font-bold text-slate-800 text-sm">Retrieving Live Leads from Supabase Database...</p>
+                <p className="text-xs text-slate-400">Connecting to persistent PostgreSQL backend</p>
+              </div>
+            ) : filteredLeads.length === 0 ? (
               <div className="py-16 text-center text-slate-400 space-y-2">
                 <Users className="w-10 h-10 mx-auto text-slate-300" />
                 <p className="font-bold text-slate-700 text-sm">No applications found</p>

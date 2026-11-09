@@ -9,8 +9,13 @@ import { Download, Trash2 } from 'lucide-react';
 
 export const AdminLeadsPage: React.FC = () => {
   const { toggleMenu } = useOutletContext<{ toggleMenu: () => void }>();
-  const { leads, exportLeadsCsv, deleteAllLeads } = useData();
+  const { leads, exportLeadsCsv, deleteAllLeads, fetchLeads } = useData();
   const { success, error: notifyError } = useNotification();
+
+  // Ensure fresh leads are fetched from database on mount
+  React.useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

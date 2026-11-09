@@ -134,3 +134,4 @@ export const DeleteAllLeadsModal: React.FC<DeleteAllLeadsModalProps> = ({
     </div>
   );
 };
+

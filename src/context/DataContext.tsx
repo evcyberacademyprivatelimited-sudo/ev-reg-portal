@@ -89,6 +89,8 @@ interface DataContextType {
   deleteLead: (leadId: string) => Promise<{ success: boolean; error?: string }>;
   deleteAllLeads: () => Promise<{ success: boolean; error?: string; count?: number }>;
   exportLeadsCsv: (options?: { courseId?: string; status?: string }) => void;
+  fetchLeads: () => Promise<{ success: boolean; data?: Lead[]; error?: string }>;
+  leadsFetchError: string | null;
 
   // Content (Testimonials, FAQs, Settings)
   testimonials: Testimonial[];
@@ -154,6 +156,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
+  const [leadsFetchError, setLeadsFetchError] = useState<string | null>(null);
 
   // Notes & History - Strictly empty in production until retrieved from Supabase
   const [leadNotes, setLeadNotes] = useState<LeadNote[]>(() => {
@@ -219,6 +222,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(siteSettings));
     }
   }, [isProductionDB, courses, videos, leads, leadNotes, leadHistory, testimonials, faqs, siteSettings]);
+
+  // Standalone Lead Retrieval Directly from Supabase Backend Database
+  const fetchLeads = useCallback(async (): Promise<{ success: boolean; data?: Lead[]; error?: string }> => {
+    if (!isSupabaseConfigured()) {
+      return { success: true, data: leads };
+    }
+
+    setIsLoadingLeads(true);
+    setLeadsFetchError(null);
+
+    try {
+      const { data: dbLeads, error: leadsErr } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (leadsErr) {
+        console.error('[DataContext] Error fetching leads from Supabase backend:', leadsErr);
+        setLeadsFetchError(leadsErr.message);
+        return { success: false, error: leadsErr.message };
+      }
+
+      const fetched = (dbLeads || []) as Lead[];
+      setLeads(fetched);
+
+      // Hydrate notes
+      const { data: dbNotes } = await supabase
+        .from('lead_notes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (dbNotes) setLeadNotes(dbNotes as LeadNote[]);
+
+      // Hydrate history
+      const { data: dbHist } = await supabase
+        .from('lead_status_history')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (dbHist) setLeadHistory(dbHist as LeadStatusHistory[]);
+
+      return { success: true, data: fetched };
+    } catch (err) {
+      const msg = (err as Error).message || 'Failed to fetch leads from backend database';
+      console.error('[DataContext] Exception during fetchLeads:', err);
+      setLeadsFetchError(msg);
+      return { success: false, error: msg };
+    } finally {
+      setIsLoadingLeads(false);
+    }
+  }, [leads]);
 
   // Load and hydrate all data directly from Supabase
   const refreshData = useCallback(async () => {
@@ -323,35 +375,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setVideos(dbVideos as VideoItem[]);
       }
 
-      // 3. Load Leads (authenticated staff/admins only by RLS)
-      const { data: dbLeads } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dbLeads) {
-        setLeads(dbLeads as Lead[]);
-      }
-
-      // 4. Load Lead Notes
-      const { data: dbNotes } = await supabase
-        .from('lead_notes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dbNotes) {
-        setLeadNotes(dbNotes as LeadNote[]);
-      }
-
-      // 5. Load Lead History
-      const { data: dbHist } = await supabase
-        .from('lead_status_history')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dbHist) {
-        setLeadHistory(dbHist as LeadStatusHistory[]);
-      }
+      // 3. Load Leads from backend database
+      await fetchLeads();
 
       // 6. Load Testimonials
       const { data: dbTestimonials } = await supabase
@@ -379,11 +404,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingCourses(false);
       setIsLoadingLeads(false);
     }
-  }, [courses.length, videos.length, faqs.length]);
+  }, [courses.length, videos.length, faqs.length, fetchLeads]);
 
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+
+  // 1. Reactive lead hydration: Whenever user authenticates, fetch backend leads immediately
+  useEffect(() => {
+    if (isAuthenticated || user) {
+      fetchLeads();
+    }
+  }, [isAuthenticated, user?.id, fetchLeads]);
+
+  // 2. Multi-tab & session synchronization: Listen to Supabase auth events
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchLeads();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchLeads]);
 
   // Course Helpers
   const getCourseBySlug = (slug: string): Course | undefined => {
@@ -1381,6 +1428,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteLead,
     deleteAllLeads,
     exportLeadsCsv,
+    fetchLeads,
+    leadsFetchError,
     testimonials,
     faqs,
     siteSettings,

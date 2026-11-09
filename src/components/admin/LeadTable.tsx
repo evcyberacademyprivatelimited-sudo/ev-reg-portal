@@ -9,6 +9,9 @@ import {
   Building,
   Clock,
   Trash2,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import { LeadStatusBadge } from './LeadStatusBadge';
@@ -22,8 +25,21 @@ interface LeadTableProps {
 }
 
 export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => {
-  const { leads, courses, exportLeadsCsv, deleteAllLeads } = useData();
+  const {
+    leads,
+    courses,
+    isLoadingLeads,
+    leadsFetchError,
+    fetchLeads,
+    exportLeadsCsv,
+    deleteAllLeads,
+  } = useData();
   const { success, error: notifyError } = useNotification();
+
+  // Ensure fresh leads are fetched from database on mount
+  React.useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -142,8 +158,36 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
             <Trash2 className="w-3.5 h-3.5 text-red-600" />
             <span>Delete All</span>
           </button>
+          {/* Refresh Leads from DB */}
+          <button
+            type="button"
+            onClick={() => fetchLeads()}
+            disabled={isLoadingLeads}
+            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+            title="Refresh leads from database"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingLeads ? 'animate-spin text-red-600' : ''}`} />
+          </button>
         </div>
       </div>
+
+      {/* Database Error Banner */}
+      {leadsFetchError && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>Database Connection Error: {leadsFetchError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => fetchLeads()}
+            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
 
       {/* Leads Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
@@ -283,11 +327,20 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
                   );
                 })
               ) : (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 font-normal">
-                    No leads found matching your criteria.
-                  </td>
-                </tr>
+                isLoadingLeads ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-slate-500 font-normal">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-red-600 mb-2" />
+                      <span>Retrieving live leads from database...</span>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-slate-400 font-normal">
+                      No leads found matching your criteria.
+                    </td>
+                  </tr>
+                )
               )}
             </tbody>
           </table>
