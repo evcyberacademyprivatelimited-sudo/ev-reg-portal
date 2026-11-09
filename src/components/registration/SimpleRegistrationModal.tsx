@@ -34,6 +34,25 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
     }
   }, [selectedCourse, courses, courseId]);
 
+  // Handle Escape key to close modal
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setStudentName('');
+        setEmail('');
+        setContactNumber('');
+        setErrorMessage(null);
+        setSubmittedLeadNumber(null);
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const currentCourse = courses.find((c) => c.id === courseId) || selectedCourse;
@@ -88,20 +107,27 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
     <div
       role="dialog"
       aria-modal="true"
+      onClick={handleResetAndClose}
       className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
     >
-      <div className="relative w-full max-w-lg bg-[#090d16] rounded-3xl shadow-2xl border border-slate-800 text-white overflow-hidden animate-fade-in">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg bg-[#090d16] rounded-3xl shadow-2xl border border-slate-800 text-white overflow-hidden animate-fade-in"
+      >
         {/* Ambient Red Glow in corner */}
         <div className="absolute -top-12 -right-12 w-40 h-40 bg-red-600/15 rounded-full blur-2xl pointer-events-none" />
 
-        {/* Close Button */}
+        {/* Close Button (z-50 ensure it is always above all modal content and clickable) */}
         <button
           type="button"
-          onClick={handleResetAndClose}
-          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition cursor-pointer z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleResetAndClose();
+          }}
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-50 p-2 text-slate-400 hover:text-white hover:bg-slate-800/90 rounded-full transition cursor-pointer"
           aria-label="Close form"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 pointer-events-none" />
         </button>
 
         {submittedLeadNumber ? (
