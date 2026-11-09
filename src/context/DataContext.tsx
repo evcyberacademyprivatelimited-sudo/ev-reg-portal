@@ -87,6 +87,7 @@ interface DataContextType {
   addLeadNote: (leadId: string, noteText: string) => Promise<{ success: boolean; error?: string }>;
   getLeadHistory: (leadId: string) => LeadStatusHistory[];
   deleteLead: (leadId: string) => Promise<{ success: boolean; error?: string }>;
+  deleteAllLeads: () => Promise<{ success: boolean; error?: string; count?: number }>;
   exportLeadsCsv: (options?: { courseId?: string; status?: string }) => void;
 
   // Content (Testimonials, FAQs, Settings)
@@ -1081,7 +1082,47 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setLeads((prev) => prev.filter((l) => l.id !== leadId));
+    setLeadNotes((prev) => prev.filter((n) => n.lead_id !== leadId));
+    setLeadHistory((prev) => prev.filter((h) => h.lead_id !== leadId));
     return { success: true };
+  };
+
+  const deleteAllLeads = async (): Promise<{ success: boolean; error?: string; count?: number }> => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'Authentication required to delete leads.' };
+    }
+
+    const count = leads.length;
+    if (count === 0) {
+      return { success: true, count: 0 };
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const leadIds = leads.map((l) => l.id).filter((id) => isValidUuid(id));
+        if (leadIds.length > 0) {
+          const { error } = await supabase.from('leads').delete().in('id', leadIds);
+          if (error) return { success: false, error: error.message };
+        } else {
+          const { error } = await supabase.from('leads').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          if (error) return { success: false, error: error.message };
+        }
+      } catch (err) {
+        return { success: false, error: (err as Error).message };
+      }
+    }
+
+    setLeads([]);
+    setLeadNotes([]);
+    setLeadHistory([]);
+    try {
+      localStorage.setItem(STORAGE_LEADS, '[]');
+      localStorage.setItem(STORAGE_NOTES, '[]');
+      localStorage.setItem(STORAGE_HISTORY, '[]');
+    } catch {
+      // ignore storage sync errors
+    }
+    return { success: true, count };
   };
 
   // CSV Export
@@ -1338,6 +1379,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     addLeadNote,
     getLeadHistory,
     deleteLead,
+    deleteAllLeads,
     exportLeadsCsv,
     testimonials,
     faqs,

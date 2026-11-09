@@ -4,6 +4,7 @@ import { AdminHeader } from '../../components/admin/AdminHeader';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
 import { Lead, LeadStatus } from '../../types';
+import { DeleteAllLeadsModal } from '../../components/admin/DeleteAllLeadsModal';
 import {
   Users,
   UserCheck,
@@ -30,6 +31,7 @@ export const AdminDashboardPage: React.FC = () => {
     addLeadNote,
     getLeadNotes,
     deleteLead,
+    deleteAllLeads,
     exportLeadsCsv,
   } = useData();
   const { success, error: notifyError } = useNotification();
@@ -39,6 +41,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [activeLeadForModal, setActiveLeadForModal] = useState<Lead | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // 1. KPI Counts
   const totalApplications = leads.length;
@@ -82,6 +86,24 @@ export const AdminDashboardPage: React.FC = () => {
       success('Application deleted.');
     } else {
       notifyError('Delete failed', res.error);
+    }
+  };
+
+  // Handle Delete All Leads
+  const handleConfirmDeleteAll = async () => {
+    if (leads.length === 0) return;
+    setIsDeletingAll(true);
+    const res = await deleteAllLeads();
+    setIsDeletingAll(false);
+    setShowDeleteAllModal(false);
+
+    if (res.success) {
+      if (activeLeadForModal) {
+        setActiveLeadForModal(null);
+      }
+      success(`All leads deleted successfully (${res.count || 0} removed).`);
+    } else {
+      notifyError('Delete failed', res.error || 'Failed to delete leads.');
     }
   };
 
@@ -130,14 +152,26 @@ export const AdminDashboardPage: React.FC = () => {
         subtitle="Manage student registrations for EV Cyber Academy Private Limited."
         onMenuToggle={toggleMenu}
         actions={
-          <button
-            type="button"
-            onClick={() => exportLeadsCsv()}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-red-400" />
-            <span>Export CSV</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={totalApplications === 0 || isDeletingAll}
+              onClick={() => setShowDeleteAllModal(true)}
+              className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed text-red-600 border border-red-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              title="Permanently delete all registered leads"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              <span>Delete All Leads</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => exportLeadsCsv()}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-red-400" />
+              <span>Export CSV</span>
+            </button>
+          </div>
         }
       />
 
@@ -514,6 +548,15 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete All Leads Confirmation Modal */}
+      <DeleteAllLeadsModal
+        isOpen={showDeleteAllModal}
+        onClose={() => setShowDeleteAllModal(false)}
+        onConfirm={handleConfirmDeleteAll}
+        totalLeads={totalApplications}
+        isDeleting={isDeletingAll}
+      />
     </div>
   );
 };

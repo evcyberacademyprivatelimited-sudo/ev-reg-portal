@@ -8,23 +8,44 @@ import {
   Calendar,
   Building,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import { LeadStatusBadge } from './LeadStatusBadge';
 import { LeadDetailModal } from './LeadDetailModal';
+import { DeleteAllLeadsModal } from './DeleteAllLeadsModal';
 import { useData } from '../../context/DataContext';
+import { useNotification } from '../../context/NotificationContext';
 
 interface LeadTableProps {
   initialCourseFilter?: string;
 }
 
 export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => {
-  const { leads, courses, exportLeadsCsv } = useData();
+  const { leads, courses, exportLeadsCsv, deleteAllLeads } = useData();
+  const { success, error: notifyError } = useNotification();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [courseFilter, setCourseFilter] = useState<string>(initialCourseFilter || 'all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleConfirmDeleteAll = async () => {
+    if (leads.length === 0) return;
+    setIsDeleting(true);
+    const res = await deleteAllLeads();
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+
+    if (res.success) {
+      if (selectedLead) setSelectedLead(null);
+      success(`All leads deleted successfully (${res.count || 0} removed).`);
+    } else {
+      notifyError('Failed to delete leads', res.error || 'Operation failed');
+    }
+  };
 
   // Filter leads
   const filteredLeads = leads.filter((lead) => {
@@ -108,6 +129,18 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
           >
             <Download className="w-3.5 h-3.5 text-red-400" />
             <span>Export CSV</span>
+          </button>
+
+          {/* Delete All Leads */}
+          <button
+            type="button"
+            disabled={leads.length === 0 || isDeleting}
+            onClick={() => setShowDeleteModal(true)}
+            className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed text-red-600 border border-red-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            title="Permanently delete all registered leads"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-red-600" />
+            <span>Delete All</span>
           </button>
         </div>
       </div>
@@ -274,6 +307,15 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
           onClose={() => setSelectedLead(null)}
         />
       )}
+
+      {/* Delete All Leads Modal */}
+      <DeleteAllLeadsModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDeleteAll}
+        totalLeads={leads.length}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
