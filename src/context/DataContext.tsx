@@ -749,7 +749,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const now = new Date().toISOString();
     const generatedLeadId = generateUuid();
-    const nextLeadNum = 'EV-' + (1000 + leads.length + 1);
+    // Unique registration reference for student receipt & client state
+    // (Supabase PostgreSQL automatically generates the official sequential lead_number via lead_number_seq)
+    const nextLeadNum = 'EV-' + (100000 + Math.floor(Math.random() * 900000));
 
     // Only assign if submitted by an authenticated staff member with a valid UUID;
     // For public students, assigned_to is strictly null (unassigned incoming lead)
@@ -789,7 +791,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const insertPayload = {
           id: generatedLeadId,
-          lead_number: nextLeadNum,
+          // Do NOT pass lead_number: Supabase PostgreSQL automatically generates
+          // unique sequential numbers via DEFAULT ('EV-' || NEXTVAL('lead_number_seq')::TEXT)
           full_name: newLead.full_name,
           email: newLead.email,
           phone: newLead.phone,
