@@ -15,7 +15,8 @@ export const AdminLeadsPage: React.FC = () => {
   // Ensure fresh leads are fetched from database on mount
   React.useEffect(() => {
     fetchLeads();
-  }, [fetchLeads]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

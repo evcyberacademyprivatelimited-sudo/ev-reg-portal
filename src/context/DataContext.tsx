@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   Course,
   VideoItem,
@@ -226,7 +226,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Standalone Lead Retrieval Directly from Supabase Backend Database
   const fetchLeads = useCallback(async (): Promise<{ success: boolean; data?: Lead[]; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: true, data: leads };
+      return { success: true };
     }
 
     setIsLoadingLeads(true);
@@ -270,7 +270,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoadingLeads(false);
     }
-  }, [leads]);
+  }, []); // Stably memoized with zero dependencies to prevent infinite refresh cycles
+
+  // Track the user ID for which leads were already hydrated
+  const lastHydratedUserIdRef = useRef<string | null>(null);
 
   // Load and hydrate all data directly from Supabase
   const refreshData = useCallback(async () => {
@@ -404,16 +407,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingCourses(false);
       setIsLoadingLeads(false);
     }
-  }, [courses.length, videos.length, faqs.length, fetchLeads]);
+  }, [fetchLeads]);
 
+  // Initial load runs strictly once on mount
   useEffect(() => {
     refreshData();
-  }, [refreshData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // 1. Reactive lead hydration: Whenever user authenticates, fetch backend leads immediately
+  // 1. Reactive lead hydration: Whenever user authenticates or user profile changes, fetch backend leads once
   useEffect(() => {
-    if (isAuthenticated || user) {
-      fetchLeads();
+    if (isAuthenticated && user?.id) {
+      if (lastHydratedUserIdRef.current !== user.id) {
+        lastHydratedUserIdRef.current = user.id;
+        fetchLeads();
+      }
+    } else if (!isAuthenticated) {
+      lastHydratedUserIdRef.current = null;
     }
   }, [isAuthenticated, user?.id, fetchLeads]);
 
@@ -421,8 +431,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
         fetchLeads();
       }
     });

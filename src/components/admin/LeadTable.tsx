@@ -36,11 +36,6 @@ export const LeadTable: React.FC<LeadTableProps> = ({ initialCourseFilter }) => 
   } = useData();
   const { success, error: notifyError } = useNotification();
 
-  // Ensure fresh leads are fetched from database on mount
-  React.useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [courseFilter, setCourseFilter] = useState<string>(initialCourseFilter || 'all');

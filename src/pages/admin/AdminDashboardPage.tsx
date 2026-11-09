@@ -41,10 +41,11 @@ export const AdminDashboardPage: React.FC = () => {
   } = useData();
   const { success, error: notifyError } = useNotification();
 
-  // Always fetch latest backend leads on dashboard mount
+  // Fetch latest backend leads once on dashboard mount
   React.useEffect(() => {
     fetchLeads();
-  }, [fetchLeads]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
