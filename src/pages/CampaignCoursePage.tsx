@@ -16,13 +16,13 @@ import {
 export const CampaignCoursePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { courses, isLoadingCourses, getCourseBySlug, siteSettings } = useData();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   // Look up matching course
   const targetCourse = slug ? getCourseBySlug(slug) : undefined;
   const course = targetCourse && targetCourse.status === 'published' ? targetCourse : undefined;
 
-  // Auto-open registration modal on load if configured by admin
+  // Track campaign landing view on mount
   useEffect(() => {
     if (course) {
       trackEvent('page_view', course.id, {
@@ -30,12 +30,10 @@ export const CampaignCoursePage: React.FC = () => {
         slug,
         course_title: course.title,
       });
-
-      if (course.auto_open_modal) {
-        setIsModalOpen(true);
-      }
+      // Ensure modal is open on campaign landing
+      setIsModalOpen(true);
     }
-  }, [course?.id, course?.auto_open_modal, slug]);
+  }, [course?.id, slug]);
 
   // Loading state: While courses are loading or list is empty on mount, show clean cyber loader
   if (isLoadingCourses || (courses.length === 0 && !course)) {
@@ -206,11 +204,13 @@ export const CampaignCoursePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Registration Modal Pre-Selected with This Course */}
+      {/* Registration Modal Pre-Selected with This Course (Locked on Campaign Route) */}
       <SimpleRegistrationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         selectedCourse={course}
+        locked={true}
+        urgencyBadgeText="🔥 Only 3 Slots Remaining"
       />
     </div>
   );

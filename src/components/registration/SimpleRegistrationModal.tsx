@@ -7,12 +7,16 @@ interface SimpleRegistrationModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedCourse: Course | null;
+  locked?: boolean;
+  urgencyBadgeText?: string;
 }
 
 export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = ({
   isOpen,
   onClose,
   selectedCourse,
+  locked = false,
+  urgencyBadgeText = '🔥 Only 3 Slots Remaining',
 }) => {
   const { courses, submitRegistration } = useData();
 
@@ -34,9 +38,9 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
     }
   }, [selectedCourse, courses, courseId]);
 
-  // Handle Escape key to close modal
+  // Handle Escape key to close modal (disabled when locked)
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || locked) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setStudentName('');
@@ -51,7 +55,7 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, locked, onClose]);
 
   if (!isOpen) return null;
 
@@ -107,7 +111,7 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
     <div
       role="dialog"
       aria-modal="true"
-      onClick={handleResetAndClose}
+      onClick={locked ? undefined : handleResetAndClose}
       className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
     >
       <div
@@ -117,18 +121,20 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
         {/* Ambient Red Glow in corner */}
         <div className="absolute -top-12 -right-12 w-40 h-40 bg-red-600/15 rounded-full blur-2xl pointer-events-none" />
 
-        {/* Close Button (z-50 ensure it is always above all modal content and clickable) */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleResetAndClose();
-          }}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-50 p-2 text-slate-400 hover:text-white hover:bg-slate-800/90 rounded-full transition cursor-pointer"
-          aria-label="Close form"
-        >
-          <X className="w-5 h-5 pointer-events-none" />
-        </button>
+        {/* Close Button - Hidden when form is locked on campaign route */}
+        {!locked && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleResetAndClose();
+            }}
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 z-50 p-2 text-slate-400 hover:text-white hover:bg-slate-800/90 rounded-full transition cursor-pointer"
+            aria-label="Close form"
+          >
+            <X className="w-5 h-5 pointer-events-none" />
+          </button>
+        )}
 
         {submittedLeadNumber ? (
           /* Success Screen */
@@ -176,6 +182,27 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
               </p>
             </div>
 
+            {/* High-Visibility Urgency Badge (Only 3 Slots Remaining) */}
+            {(locked || urgencyBadgeText) && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-950/80 via-amber-950/60 to-red-950/80 border border-red-500/50 text-amber-300 shadow-md">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm animate-bounce">🔥</span>
+                  <span className="text-xs font-mono font-black tracking-wider uppercase text-amber-200">
+                    {urgencyBadgeText}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-widest hidden sm:inline">
+                    Live
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Selected Course Display */}
             {currentCourse && (
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
@@ -193,7 +220,7 @@ export const SimpleRegistrationModal: React.FC<SimpleRegistrationModalProps> = (
                   </div>
                 </div>
 
-                {courses.length > 1 && (
+                {courses.length > 1 && !locked && (
                   <select
                     value={courseId}
                     onChange={(e) => setCourseId(e.target.value)}
