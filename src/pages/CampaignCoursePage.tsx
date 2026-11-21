@@ -549,7 +549,7 @@ export const CampaignCoursePage: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <span>Confirm My Slot (₹{nowPrice})</span>
+                            <span>Confirm My Slot</span>
                             <ArrowRight className="w-4 h-4" />
                           </>
                         )}
