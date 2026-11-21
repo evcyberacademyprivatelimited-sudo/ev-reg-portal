@@ -36,6 +36,9 @@ const PublicLayout: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <Routes>
+      {/* Explicit Campaign Route for /499 – Standalone, Zero Interception */}
+      <Route path="/499" element={<CampaignCoursePage />} />
+
       {/* Admin Authentication */}
       <Route
         path="/login"
@@ -65,17 +68,19 @@ export const App: React.FC = () => {
         <Route path="content" element={<Navigate to="/admin/settings" replace />} />
       </Route>
 
-      {/* Legacy redirects above dynamic /:slug */}
+      {/* Legacy redirects */}
       <Route path="/programs" element={<Navigate to="/" replace />} />
       <Route path="/courses/*" element={<Navigate to="/" replace />} />
       <Route path="/register" element={<Navigate to="/" replace />} />
       <Route path="/registration-success" element={<Navigate to="/" replace />} />
 
-      {/* Student Website & Campaign Routes */}
+      {/* Student Website – Single-Page Course Registration Experience */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/:slug" element={<CampaignCoursePage />} />
       </Route>
+
+      {/* Dynamic Campaign Route (e.g., /ethical-hacking, /lfhp) */}
+      <Route path="/:slug" element={<CampaignCoursePage />} />
 
       {/* Global Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
