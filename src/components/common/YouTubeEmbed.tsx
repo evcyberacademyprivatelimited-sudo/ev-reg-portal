@@ -75,14 +75,43 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
     <div className={`relative group rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl ${className}`}>
       {/* 16:9 Aspect Ratio Frame */}
       <div className="relative w-full aspect-video">
-        <iframe
-          src={embedUrl}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          className="w-full h-full border-0 absolute inset-0"
-          loading="lazy"
-        />
+        {!isPlaying ? (
+          <div
+            onClick={handleStartPlay}
+            className="w-full h-full relative cursor-pointer group/thumb overflow-hidden flex items-center justify-center bg-slate-950"
+            title="Click to play video"
+          >
+            {/* Lightweight Thumbnail Preview */}
+            <img
+              src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+              alt={title}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300 opacity-90 group-hover/thumb:opacity-100"
+            />
+            {/* Ambient Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none" />
+
+            {/* Glowing Cyber Play Button */}
+            <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center shadow-2xl shadow-red-600/50 group-hover/thumb:scale-110 transition-all duration-300 border-2 border-white/20">
+              <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-white translate-x-0.5" />
+            </div>
+
+            <div className="absolute bottom-3 left-4 right-4 z-10 flex items-center justify-between text-white text-xs pointer-events-none">
+              <span className="font-bold truncate drop-shadow-md">{title}</span>
+              <span className="px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono border border-white/20 shrink-0">
+                Click to Play
+              </span>
+            </div>
+          </div>
+        ) : (
+          <iframe
+            src={embedUrl}
+            title={title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full border-0 absolute inset-0"
+          />
+        )}
 
         {/* Video overlay controls & unmute helper banner if muted autoplay is active */}
         {isMuted && isPlaying && (

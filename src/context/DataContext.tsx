@@ -123,17 +123,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user, isSuperAdmin, staffList, isAuthenticated } = useAuth();
   const isProductionDB = isSupabaseConfigured();
 
-  // Courses state
+  // Courses state - hydrate immediately from localStorage cache on first render (0ms blank screen)
   const [courses, setCourses] = useState<Course[]>(() => {
-    if (isProductionDB) return [];
     try {
       const stored = localStorage.getItem(STORAGE_COURSES);
-      return stored ? JSON.parse(stored) : INITIAL_COURSES;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
     } catch {
-      return INITIAL_COURSES;
+      // ignore
+    }
+    return INITIAL_COURSES;
+  });
+  const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_COURSES);
+      return !stored;
+    } catch {
+      return false;
     }
   });
-  const [isLoadingCourses, setIsLoadingCourses] = useState(isProductionDB);
 
   // Videos state
   const [videos, setVideos] = useState<VideoItem[]>(() => {
@@ -210,19 +220,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Sync state to localStorage only when running locally without Supabase credentials
+  // Cache public data in localStorage for instant 0ms first-render hydration
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_COURSES, JSON.stringify(courses));
+      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(siteSettings));
+      localStorage.setItem(STORAGE_VIDEOS, JSON.stringify(videos));
+      localStorage.setItem(STORAGE_TESTIMONIALS, JSON.stringify(testimonials));
+      localStorage.setItem(STORAGE_FAQS, JSON.stringify(faqs));
+    } catch {
+      // ignore storage quota errors
+    }
+  }, [courses, siteSettings, videos, testimonials, faqs]);
+
+  // Sync admin leads data to localStorage only in local dev mode (leads never cached in production for privacy/RLS)
   useEffect(() => {
     if (!isProductionDB) {
-      localStorage.setItem(STORAGE_COURSES, JSON.stringify(courses));
-      localStorage.setItem(STORAGE_VIDEOS, JSON.stringify(videos));
       localStorage.setItem(STORAGE_LEADS, JSON.stringify(leads));
       localStorage.setItem(STORAGE_NOTES, JSON.stringify(leadNotes));
       localStorage.setItem(STORAGE_HISTORY, JSON.stringify(leadHistory));
-      localStorage.setItem(STORAGE_TESTIMONIALS, JSON.stringify(testimonials));
-      localStorage.setItem(STORAGE_FAQS, JSON.stringify(faqs));
-      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(siteSettings));
     }
-  }, [isProductionDB, courses, videos, leads, leadNotes, leadHistory, testimonials, faqs, siteSettings]);
+  }, [isProductionDB, leads, leadNotes, leadHistory]);
 
   // Standalone Lead Retrieval Directly from Supabase Backend Database
   const fetchLeads = useCallback(async (): Promise<{ success: boolean; data?: Lead[]; error?: string }> => {
@@ -287,16 +305,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      setIsLoadingCourses(true);
-      setIsLoadingLeads(true);
+      setIsLoadingCourses(courses.length === 0);
+      if (isAuthenticated) setIsLoadingLeads(true);
 
-      // Load Site Settings & Course Display Order first
+      // 1. Run all public queries concurrently via Promise.all for maximum speed
+      const [
+        settingsResult,
+        coursesResult,
+        videosResult,
+        testimonialsResult,
+        faqsResult
+      ] = await Promise.all([
+        supabase.from('site_settings').select('*'),
+        supabase.from('courses').select('*'),
+        supabase.from('videos').select('*').order('sort_order', { ascending: true }),
+        supabase.from('testimonials').select('*').order('sort_order', { ascending: true }),
+        supabase.from('faqs').select('*').order('sort_order', { ascending: true }),
+      ]);
+
+      // Process Site Settings
       let orderMap: Record<string, number> = {};
       let pricingMap: Record<string, { original_price?: number; now_price?: number }> = {};
       let durationsMap: Record<string, { duration_value?: number; duration_unit?: DurationUnit; duration_text?: string }> = {};
       let routeSettingsMap: Record<string, any> = {};
-      const { data: dbSettings } = await supabase.from('site_settings').select('*');
 
+      const dbSettings = settingsResult.data;
       if (dbSettings && dbSettings.length > 0) {
         setSiteSettings((prev) => {
           const updated = { ...prev };
@@ -349,12 +382,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
 
-      // 1. Load Courses & Apply Display Order
-      const { data: dbCourses, error: courseErr } = await supabase
-        .from('courses')
-        .select('*');
-
-      if (!courseErr && dbCourses) {
+      // Process Courses
+      const dbCourses = coursesResult.data;
+      if (!coursesResult.error && dbCourses) {
         const sorted = (dbCourses as Course[])
           .map((c, idx) => {
             const coursePricing = pricingMap[c.id];
@@ -395,37 +425,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCourses(sorted);
       }
 
-      // 2. Load Videos
-      const { data: dbVideos } = await supabase
-        .from('videos')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (dbVideos) {
-        setVideos(dbVideos as VideoItem[]);
+      // Process Videos
+      if (videosResult.data) {
+        setVideos(videosResult.data as VideoItem[]);
       }
 
-      // 3. Load Leads from backend database
-      await fetchLeads();
-
-      // 6. Load Testimonials
-      const { data: dbTestimonials } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (dbTestimonials) {
-        setTestimonials(dbTestimonials as Testimonial[]);
+      // Process Testimonials
+      if (testimonialsResult.data) {
+        setTestimonials(testimonialsResult.data as Testimonial[]);
       }
 
-      // 7. Load FAQs
-      const { data: dbFaqs } = await supabase
-        .from('faqs')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      // Process FAQs
+      if (faqsResult.data) {
+        setFaqs(faqsResult.data as Faq[]);
+      }
 
-      if (dbFaqs) {
-        setFaqs(dbFaqs as Faq[]);
+      // Only fetch leads if an authorized admin is authenticated
+      if (isAuthenticated && user?.id) {
+        await fetchLeads();
       }
 
     } catch (err) {
@@ -434,7 +451,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingCourses(false);
       setIsLoadingLeads(false);
     }
-  }, [fetchLeads]);
+  }, [fetchLeads, isAuthenticated, user?.id]);
 
   // Initial load runs strictly once on mount
   useEffect(() => {
