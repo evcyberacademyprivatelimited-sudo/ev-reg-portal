@@ -43,6 +43,7 @@ export interface Course {
   duration_text?: string;
   duration_unit?: DurationUnit;
   duration_value?: number;
+  auto_open_modal?: boolean;
   learning_mode?: string;
   image_url?: string;
   hours_per_week: number;

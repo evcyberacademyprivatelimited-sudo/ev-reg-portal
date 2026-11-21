@@ -133,7 +133,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return INITIAL_COURSES;
     }
   });
-  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(isProductionDB);
 
   // Videos state
   const [videos, setVideos] = useState<VideoItem[]>(() => {
@@ -294,6 +294,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let orderMap: Record<string, number> = {};
       let pricingMap: Record<string, { original_price?: number; now_price?: number }> = {};
       let durationsMap: Record<string, { duration_value?: number; duration_unit?: DurationUnit; duration_text?: string }> = {};
+      let routeSettingsMap: Record<string, any> = {};
       const { data: dbSettings } = await supabase.from('site_settings').select('*');
 
       if (dbSettings && dbSettings.length > 0) {
@@ -308,6 +309,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             if (row.key === 'course_durations' && row.value) {
               durationsMap = (row.value.durations || row.value) as Record<string, { duration_value?: number; duration_unit?: DurationUnit; duration_text?: string }>;
+            }
+            if (row.key === 'course_route_settings' && row.value) {
+              routeSettingsMap = (row.value.routes || row.value.auto_open || row.value) as Record<string, any>;
             }
             if (row.key === 'intro_video_settings' && row.value) {
               updated.show_intro_video = row.value.is_enabled !== undefined ? Boolean(row.value.is_enabled) : updated.show_intro_video;
@@ -371,6 +375,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               : (c.duration_text ? (parseInt(c.duration_text, 10) || c.duration_weeks || 12) : (c.duration_weeks || 12));
             const durText = durMeta?.duration_text || (c.duration_text ? c.duration_text : `${durVal} ${durUnit}`);
 
+            const routeMeta = routeSettingsMap[c.id];
+            const autoOpen = typeof routeMeta === 'boolean'
+              ? routeMeta
+              : Boolean(routeMeta?.auto_open_modal || routeMeta?.auto_open);
+
             return {
               ...c,
               sort_order: orderMap[c.id] !== undefined ? Number(orderMap[c.id]) : (idx + 1),
@@ -379,6 +388,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               duration_value: durVal,
               duration_unit: durUnit,
               duration_text: durText,
+              auto_open_modal: autoOpen,
             };
           })
           .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
@@ -490,6 +500,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ? targetDurationValue
       : Math.max(1, Math.round(targetDurationValue / 7));
 
+    const targetAutoOpenModal = courseData.auto_open_modal !== undefined
+      ? Boolean(courseData.auto_open_modal)
+      : Boolean(currentCourse?.auto_open_modal);
+
     const preparedCourse: Course = {
       id: courseData.id || generateUuid(),
       slug:
@@ -509,6 +523,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       duration_text: targetDurationText,
       duration_unit: targetDurationUnit,
       duration_value: targetDurationValue,
+      auto_open_modal: targetAutoOpenModal,
       hours_per_week: Number(courseData.hours_per_week) || 8,
       fee_amount: Number(courseData.fee_amount) || 0,
       original_price:
@@ -591,6 +606,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           updated_at: new Date().toISOString(),
         });
 
+        // Persist Course Route Settings (Auto-Open Modal) to site_settings
+        const currentRouteSettingsMap: Record<string, { auto_open_modal: boolean }> = {};
+        courses.forEach((c) => {
+          currentRouteSettingsMap[c.id] = {
+            auto_open_modal: Boolean(c.auto_open_modal),
+          };
+        });
+        currentRouteSettingsMap[preparedCourse.id] = {
+          auto_open_modal: targetAutoOpenModal,
+        };
+
+        await supabase.from('site_settings').upsert({
+          key: 'course_route_settings',
+          value: {
+            routes: currentRouteSettingsMap,
+            auto_open: Object.fromEntries(
+              Object.entries(currentRouteSettingsMap).map(([k, v]) => [k, v.auto_open_modal])
+            ),
+          },
+          updated_at: new Date().toISOString(),
+        });
+
         if (isNew) {
           // Omit non-schema fields so PostgreSQL does not throw unrecognized column errors
           const {
@@ -600,6 +637,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             duration_unit: _omitDurUnit,
             duration_value: _omitDurVal,
             duration_text: _omitDurText,
+            auto_open_modal: _omitAutoOpen,
             ...insertPayload
           } = preparedCourse;
           const { data, error } = await supabase.from('courses').insert([insertPayload]).select().single();
@@ -612,6 +650,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               duration_value: preparedCourse.duration_value,
               duration_unit: preparedCourse.duration_unit,
               duration_text: preparedCourse.duration_text,
+              auto_open_modal: preparedCourse.auto_open_modal,
             } as Course;
             setCourses((prev) => {
               const updated = [courseWithMeta, ...prev.filter((c) => c.id !== courseWithMeta.id)];
@@ -627,6 +666,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             duration_unit: _omitDurUnit,
             duration_value: _omitDurVal,
             duration_text: _omitDurText,
+            auto_open_modal: _omitAutoOpen,
             ...updatePayload
           } = preparedCourse;
           const { data, error } = await supabase
@@ -644,6 +684,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               duration_value: preparedCourse.duration_value,
               duration_unit: preparedCourse.duration_unit,
               duration_text: preparedCourse.duration_text,
+              auto_open_modal: preparedCourse.auto_open_modal,
             } as Course;
             setCourses((prev) => {
               const updated = prev.map((c) => (c.id === data.id ? updatedCourse : c));

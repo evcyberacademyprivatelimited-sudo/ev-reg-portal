@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered, Tag } from 'lucide-react';
+import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered, Tag, Globe, Copy, Check, Zap } from 'lucide-react';
 import { Course, CourseStatus, DurationUnit } from '../../types';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -47,6 +47,9 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
   const [durationUnit, setDurationUnit] = useState<DurationUnit>(initialDurationUnit);
 
   const [learningMode, setLearningMode] = useState(course?.learning_mode || course?.tagline || 'Live Online');
+  const [customSlug, setCustomSlug] = useState(course?.slug || '');
+  const [autoOpenModal, setAutoOpenModal] = useState<boolean>(course?.auto_open_modal ?? false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [bannerText, setBannerText] = useState(course?.badge_text || 'Professional Certification Track');
   const [sortOrder, setSortOrder] = useState<number>(course?.sort_order || courses.length + 1);
   const [courseImage, setCourseImage] = useState(course?.image_url || '');
@@ -64,7 +67,9 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
 
     setIsSaving(true);
 
-    const generatedSlug = course?.slug || courseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const generatedSlug = (customSlug.trim() || courseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '');
 
     const numDuration = Math.max(1, Number(durationValue) || 1);
     const calculatedWeeks = durationUnit === 'Weeks' ? numDuration : Math.max(1, Math.round(numDuration / 7));
@@ -74,6 +79,7 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
       ...(course?.id ? { id: course.id } : {}),
       title: courseName.trim(),
       slug: generatedSlug,
+      auto_open_modal: autoOpenModal,
       summary: shortDescription.trim(),
       description: shortDescription.trim(),
       tagline: learningMode.trim(),
@@ -173,6 +179,106 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
             <p className="text-[11px] text-slate-500 mt-1">
               The full description will be shown completely on the public course card without being cut off.
             </p>
+          </div>
+
+          {/* Custom Campaign URL Route / Slug & Direct Form Settings */}
+          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-white flex items-center gap-2 text-xs">
+                <Globe className="w-4 h-4 text-red-500" />
+                Custom URL Route / Slug (Campaign Landing Page)
+              </span>
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                Direct Ad Route
+              </span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 uppercase tracking-wider mb-1 text-[10px]">
+                Custom URL Route / Slug <span className="text-red-400">*</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="font-mono font-bold text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-xs">
+                    /
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 499 or ethical-hacking-workshop"
+                    value={customSlug}
+                    onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    className="w-full pl-7 pr-3 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-white font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://registration01.evcyberacademy.in';
+                    const activeSlug = customSlug.trim() || (courseName ? courseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '499');
+                    const fullUrl = `${origin}/${activeSlug}`;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(fullUrl);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-700 shrink-0"
+                  title="Copy full campaign ad destination URL"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Live Preview Badge */}
+              <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400 flex-wrap">
+                <span className="text-slate-500">Live Preview:</span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-red-400 font-mono font-bold truncate max-w-full">
+                  {typeof window !== 'undefined' ? window.location.origin : 'https://registration01.evcyberacademy.in'}/
+                  {customSlug.trim() || (courseName ? courseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '499')}
+                </span>
+              </div>
+            </div>
+
+            {/* Auto-Open Registration Form Toggle */}
+            <div className="pt-2.5 border-t border-slate-800">
+              <div className="flex items-center justify-between gap-3">
+                <div className="pr-2">
+                  <div className="flex items-center gap-1.5 font-bold text-white text-xs">
+                    <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Auto-Open Registration Form on Page Load</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                    Instantly pops up the registration modal when visitors open your custom ad link for maximum conversion.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoOpenModal}
+                  onClick={() => setAutoOpenModal(!autoOpenModal)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    autoOpenModal ? 'bg-red-600' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      autoOpenModal ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* 3. Course Pricing (Original Price & Now Price) */}

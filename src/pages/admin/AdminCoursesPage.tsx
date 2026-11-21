@@ -16,6 +16,10 @@ import {
   Laptop,
   ArrowUp,
   ArrowDown,
+  Globe,
+  Copy,
+  Check,
+  Zap,
 } from 'lucide-react';
 
 export const AdminCoursesPage: React.FC = () => {
@@ -25,6 +29,18 @@ export const AdminCoursesPage: React.FC = () => {
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [copiedCourseId, setCopiedCourseId] = useState<string | null>(null);
+
+  const handleCopyAdUrl = (course: Course) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://registration01.evcyberacademy.in';
+    const url = `${origin}/${course.slug}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url);
+      setCopiedCourseId(course.id);
+      success(`Copied ad campaign URL: /${course.slug}`);
+      setTimeout(() => setCopiedCourseId(null), 2000);
+    }
+  };
 
   const handleCreate = () => {
     setEditingCourse(null);
@@ -161,6 +177,40 @@ export const AdminCoursesPage: React.FC = () => {
                             <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 font-normal">
                               {course.summary}
                             </p>
+
+                            {/* Active Meta Ad Campaign Route Slug & Copy Button */}
+                            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900 text-red-400 font-mono text-[11px] font-bold border border-slate-800">
+                                <Globe className="w-3 h-3 text-red-500" />
+                                <span>/{course.slug}</span>
+                              </span>
+
+                              {course.auto_open_modal && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold">
+                                  <Zap className="w-2.5 h-2.5 text-amber-600" />
+                                  Auto-Form
+                                </span>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleCopyAdUrl(course)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[11px] font-semibold transition cursor-pointer"
+                                title={`Copy Meta Ad campaign link for /${course.slug}`}
+                              >
+                                {copiedCourseId === course.id ? (
+                                  <>
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                    <span className="text-emerald-700 font-bold">Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3 h-3 text-slate-500" />
+                                    <span>Copy Ad URL</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </td>
 

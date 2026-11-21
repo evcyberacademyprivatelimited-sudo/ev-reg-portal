@@ -3,6 +3,7 @@ import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { HomePage } from './pages/HomePage';
+import { CampaignCoursePage } from './pages/CampaignCoursePage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
@@ -25,16 +26,6 @@ const PublicLayout: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <Routes>
-      {/* Student Website – Single-Page Course Registration Experience */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<HomePage />} />
-        {/* Seamless redirects for any legacy multi-page links */}
-        <Route path="/programs" element={<Navigate to="/" replace />} />
-        <Route path="/courses/*" element={<Navigate to="/" replace />} />
-        <Route path="/register" element={<Navigate to="/" replace />} />
-        <Route path="/registration-success" element={<Navigate to="/" replace />} />
-      </Route>
-
       {/* Admin Authentication */}
       <Route path="/login" element={<LoginPage />} />
 
@@ -48,6 +39,18 @@ export const App: React.FC = () => {
         <Route path="videos" element={<Navigate to="/admin/settings" replace />} />
         <Route path="analytics" element={<Navigate to="/admin" replace />} />
         <Route path="content" element={<Navigate to="/admin/settings" replace />} />
+      </Route>
+
+      {/* Legacy redirects above dynamic /:slug */}
+      <Route path="/programs" element={<Navigate to="/" replace />} />
+      <Route path="/courses/*" element={<Navigate to="/" replace />} />
+      <Route path="/register" element={<Navigate to="/" replace />} />
+      <Route path="/registration-success" element={<Navigate to="/" replace />} />
+
+      {/* Student Website & Campaign Routes */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/:slug" element={<CampaignCoursePage />} />
       </Route>
 
       {/* Global Fallback */}
