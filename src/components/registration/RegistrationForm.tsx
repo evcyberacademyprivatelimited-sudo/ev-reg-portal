@@ -287,7 +287,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <option value="">-- Choose Course Cohort --</option>
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
-                {course.title} ({course.level} &bull; {course.duration_weeks} Weeks &bull; ₹
+                {course.title} ({course.level} &bull; {course.duration_text || `${course.duration_weeks} Weeks`} &bull; ₹
                 {course.fee_amount.toLocaleString('en-IN')})
               </option>
             ))}

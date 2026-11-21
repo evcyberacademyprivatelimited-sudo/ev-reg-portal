@@ -88,7 +88,7 @@ export const CourseHero: React.FC<CourseHeroProps> = ({ course, video }) => {
                 </span>
                 <span className="text-sm font-bold text-white flex items-center gap-1 mt-0.5">
                   <Clock className="w-3.5 h-3.5 text-red-500" />
-                  <span>{course.duration_weeks} Weeks ({course.hours_per_week}h/w)</span>
+                  <span>{course.duration_text || `${course.duration_weeks} Weeks`} ({course.hours_per_week}h/w)</span>
                 </span>
               </div>
 

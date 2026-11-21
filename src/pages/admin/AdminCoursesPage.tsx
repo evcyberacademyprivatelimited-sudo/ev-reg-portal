@@ -178,10 +178,28 @@ export const AdminCoursesPage: React.FC = () => {
                         </td>
 
                         <td className="py-4 px-4 text-slate-600 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{durationText}</span>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(course)}
+                            className="flex items-center gap-2 group px-2 py-1 rounded-lg hover:bg-slate-100 transition cursor-pointer text-left"
+                            title="Click to edit program duration or details"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-500 transition" />
+                            <span className="font-bold text-slate-800 group-hover:text-red-600 transition">
+                              {durationText}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                                (course.duration_unit === 'Days' || durationText.toLowerCase().includes('day'))
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                  : 'bg-blue-100 text-blue-800 border border-blue-300'
+                              }`}
+                            >
+                              {(course.duration_unit === 'Days' || durationText.toLowerCase().includes('day'))
+                                ? 'Days'
+                                : 'Weeks'}
+                            </span>
+                          </button>
                         </td>
 
                         <td className="py-4 px-4 text-slate-600">

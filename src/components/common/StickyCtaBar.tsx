@@ -77,8 +77,8 @@ export const StickyCtaBar: React.FC<StickyCtaBarProps> = ({
                   <span>Next Batch: {new Date(course.batch_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                 </span>
               )}
-              {course?.duration_weeks && (
-                <span className="hidden sm:inline">&bull; {course.duration_weeks} Weeks Intensive</span>
+              {(course?.duration_text || course?.duration_weeks) && (
+                <span className="hidden sm:inline">&bull; {course.duration_text || `${course.duration_weeks} Weeks`} Intensive</span>
               )}
               {course?.fee_amount ? (
                 <span className="font-semibold text-slate-200">

@@ -9,6 +9,7 @@ import {
   Faq,
   SiteSettings,
   LeadStatus,
+  DurationUnit,
 } from '../types';
 import {
   INITIAL_COURSES,
@@ -292,6 +293,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Load Site Settings & Course Display Order first
       let orderMap: Record<string, number> = {};
       let pricingMap: Record<string, { original_price?: number; now_price?: number }> = {};
+      let durationsMap: Record<string, { duration_value?: number; duration_unit?: DurationUnit; duration_text?: string }> = {};
       const { data: dbSettings } = await supabase.from('site_settings').select('*');
 
       if (dbSettings && dbSettings.length > 0) {
@@ -303,6 +305,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             if (row.key === 'course_pricing' && row.value) {
               pricingMap = (row.value.pricing || row.value) as Record<string, { original_price?: number; now_price?: number }>;
+            }
+            if (row.key === 'course_durations' && row.value) {
+              durationsMap = (row.value.durations || row.value) as Record<string, { duration_value?: number; duration_unit?: DurationUnit; duration_text?: string }>;
             }
             if (row.key === 'intro_video_settings' && row.value) {
               updated.show_intro_video = row.value.is_enabled !== undefined ? Boolean(row.value.is_enabled) : updated.show_intro_video;
@@ -349,6 +354,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const sorted = (dbCourses as Course[])
           .map((c, idx) => {
             const coursePricing = pricingMap[c.id];
+            const durMeta = durationsMap[c.id];
             const mockMatch = INITIAL_COURSES.find((mc) => mc.slug === c.slug || mc.title === c.title);
             const origPrice = coursePricing?.original_price !== undefined
               ? Number(coursePricing.original_price)
@@ -357,11 +363,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ? Number(coursePricing.now_price)
               : c.fee_amount;
 
+            // Determine duration details (Weeks vs Days)
+            const durUnit: DurationUnit = durMeta?.duration_unit
+              || (c.duration_text?.toLowerCase().includes('day') ? 'Days' : 'Weeks');
+            const durVal = durMeta?.duration_value !== undefined
+              ? Number(durMeta.duration_value)
+              : (c.duration_text ? (parseInt(c.duration_text, 10) || c.duration_weeks || 12) : (c.duration_weeks || 12));
+            const durText = durMeta?.duration_text || (c.duration_text ? c.duration_text : `${durVal} ${durUnit}`);
+
             return {
               ...c,
               sort_order: orderMap[c.id] !== undefined ? Number(orderMap[c.id]) : (idx + 1),
               original_price: origPrice,
               fee_amount: feeAmt,
+              duration_value: durVal,
+              duration_unit: durUnit,
+              duration_text: durText,
             };
           })
           .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
@@ -459,6 +476,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const targetOriginalPrice = courseData.original_price;
     const currentCourse = courses.find((c) => c.id === courseData.id);
 
+    // Duration calculation (Weeks vs Days)
+    const targetDurationUnit: DurationUnit = (courseData.duration_unit || currentCourse?.duration_unit || (courseData.duration_text?.toLowerCase().includes('day') ? 'Days' : 'Weeks')) as DurationUnit;
+    const targetDurationValue = Number(
+      courseData.duration_value !== undefined
+        ? courseData.duration_value
+        : (currentCourse?.duration_value !== undefined
+            ? currentCourse.duration_value
+            : (courseData.duration_text ? (parseInt(courseData.duration_text, 10) || courseData.duration_weeks || 12) : (courseData.duration_weeks || 12)))
+    );
+    const targetDurationText = courseData.duration_text || `${targetDurationValue} ${targetDurationUnit}`;
+    const targetDurationWeeks = targetDurationUnit === 'Weeks'
+      ? targetDurationValue
+      : Math.max(1, Math.round(targetDurationValue / 7));
+
     const preparedCourse: Course = {
       id: courseData.id || generateUuid(),
       slug:
@@ -474,7 +505,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       summary: courseData.summary || '',
       description: courseData.description || '',
       level: courseData.level || 'Intermediate',
-      duration_weeks: Number(courseData.duration_weeks) || 12,
+      duration_weeks: targetDurationWeeks,
+      duration_text: targetDurationText,
+      duration_unit: targetDurationUnit,
+      duration_value: targetDurationValue,
       hours_per_week: Number(courseData.hours_per_week) || 8,
       fee_amount: Number(courseData.fee_amount) || 0,
       original_price:
@@ -536,9 +570,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
 
+        // Persist Course Durations (Weeks / Days) to site_settings
+        const currentDurationsMap: Record<string, { duration_value: number; duration_unit: DurationUnit; duration_text: string }> = {};
+        courses.forEach((c) => {
+          currentDurationsMap[c.id] = {
+            duration_value: c.duration_value !== undefined ? c.duration_value : (c.duration_weeks || 12),
+            duration_unit: c.duration_unit || (c.duration_text?.toLowerCase().includes('day') ? 'Days' : 'Weeks'),
+            duration_text: c.duration_text || `${c.duration_weeks || 12} Weeks`,
+          };
+        });
+        currentDurationsMap[preparedCourse.id] = {
+          duration_value: targetDurationValue,
+          duration_unit: targetDurationUnit,
+          duration_text: targetDurationText,
+        };
+
+        await supabase.from('site_settings').upsert({
+          key: 'course_durations',
+          value: { durations: currentDurationsMap },
+          updated_at: new Date().toISOString(),
+        });
+
         if (isNew) {
-          // Omit id, sort_order, and original_price so PostgreSQL automatically assigns default uuid_generate_v4() and avoids column errors
-          const { id: _omitId, sort_order: _omitSortOrder, original_price: _omitOrigPrice, ...insertPayload } = preparedCourse;
+          // Omit non-schema fields so PostgreSQL does not throw unrecognized column errors
+          const {
+            id: _omitId,
+            sort_order: _omitSortOrder,
+            original_price: _omitOrigPrice,
+            duration_unit: _omitDurUnit,
+            duration_value: _omitDurVal,
+            duration_text: _omitDurText,
+            ...insertPayload
+          } = preparedCourse;
           const { data, error } = await supabase.from('courses').insert([insertPayload]).select().single();
           if (error) return { success: false, error: error.message };
           if (data) {
@@ -546,6 +609,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ...data,
               sort_order: preparedCourse.sort_order,
               original_price: preparedCourse.original_price,
+              duration_value: preparedCourse.duration_value,
+              duration_unit: preparedCourse.duration_unit,
+              duration_text: preparedCourse.duration_text,
             } as Course;
             setCourses((prev) => {
               const updated = [courseWithMeta, ...prev.filter((c) => c.id !== courseWithMeta.id)];
@@ -554,8 +620,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return { success: true, data: courseWithMeta };
           }
         } else {
-          // Omit sort_order and original_price from update payload for PostgreSQL
-          const { sort_order: _omitSortOrder, original_price: _omitOrigPrice, ...updatePayload } = preparedCourse;
+          // Omit non-schema fields from update payload for PostgreSQL
+          const {
+            sort_order: _omitSortOrder,
+            original_price: _omitOrigPrice,
+            duration_unit: _omitDurUnit,
+            duration_value: _omitDurVal,
+            duration_text: _omitDurText,
+            ...updatePayload
+          } = preparedCourse;
           const { data, error } = await supabase
             .from('courses')
             .update(updatePayload)
@@ -568,6 +641,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ...data,
               sort_order: preparedCourse.sort_order,
               original_price: preparedCourse.original_price,
+              duration_value: preparedCourse.duration_value,
+              duration_unit: preparedCourse.duration_unit,
+              duration_text: preparedCourse.duration_text,
             } as Course;
             setCourses((prev) => {
               const updated = prev.map((c) => (c.id === data.id ? updatedCourse : c));

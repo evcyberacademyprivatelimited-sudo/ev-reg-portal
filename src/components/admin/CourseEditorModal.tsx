@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, BookOpen, Clock, Laptop, Image, Save, Eye, EyeOff, Terminal, ListOrdered, Tag } from 'lucide-react';
-import { Course, CourseStatus } from '../../types';
+import { Course, CourseStatus, DurationUnit } from '../../types';
 import { useData } from '../../context/DataContext';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -33,7 +33,19 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
   const [originalPrice, setOriginalPrice] = useState<number | string>(
     course?.original_price !== undefined ? course.original_price : 4999
   );
-  const [durationWeeks, setDurationWeeks] = useState(course?.duration_weeks || 12);
+  
+  // Program Duration: Value and Unit ('Weeks' | 'Days')
+  const initialDurationUnit: DurationUnit = course?.duration_unit
+    ? course.duration_unit
+    : (course?.duration_text?.toLowerCase().includes('day') ? 'Days' : 'Weeks');
+
+  const initialDurationValue = course?.duration_value !== undefined
+    ? course.duration_value
+    : (course?.duration_text ? (parseInt(course.duration_text, 10) || course.duration_weeks || 12) : (course?.duration_weeks || 12));
+
+  const [durationValue, setDurationValue] = useState<number | string>(initialDurationValue);
+  const [durationUnit, setDurationUnit] = useState<DurationUnit>(initialDurationUnit);
+
   const [learningMode, setLearningMode] = useState(course?.learning_mode || course?.tagline || 'Live Online');
   const [bannerText, setBannerText] = useState(course?.badge_text || 'Professional Certification Track');
   const [sortOrder, setSortOrder] = useState<number>(course?.sort_order || courses.length + 1);
@@ -54,6 +66,10 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
 
     const generatedSlug = course?.slug || courseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+    const numDuration = Math.max(1, Number(durationValue) || 1);
+    const calculatedWeeks = durationUnit === 'Weeks' ? numDuration : Math.max(1, Math.round(numDuration / 7));
+    const calculatedDurationText = `${numDuration} ${durationUnit}`;
+
     const coursePayload: Partial<Course> = {
       ...(course?.id ? { id: course.id } : {}),
       title: courseName.trim(),
@@ -66,7 +82,10 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
       original_price: Number(originalPrice) || 0,
       badge_text: bannerText.trim() || 'Professional Certification Track',
       sort_order: Number(sortOrder) || 1,
-      duration_weeks: Number(durationWeeks) || 12,
+      duration_value: numDuration,
+      duration_unit: durationUnit,
+      duration_text: calculatedDurationText,
+      duration_weeks: calculatedWeeks,
       hours_per_week: course?.hours_per_week || 8,
       level: course?.level || 'Intermediate',
       currency: 'INR',
@@ -218,25 +237,61 @@ export const CourseEditorModal: React.FC<CourseEditorModalProps> = ({ course, on
             </div>
           </div>
 
-          {/* 4. Duration & 5. Learning Mode Row */}
+          {/* 4. Duration Selector & 5. Learning Mode Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Duration (Weeks)
-              </label>
-              <div className="relative">
-                <Clock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="number"
-                  min={1}
-                  max={52}
-                  required
-                  placeholder="e.g. 12"
-                  value={durationWeeks}
-                  onChange={(e) => setDurationWeeks(Number(e.target.value))}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                  Program Duration <span className="text-red-500">*</span>
+                </label>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-300 text-slate-800 text-[11px] font-mono font-bold">
+                  {durationValue || 0} {durationUnit}
+                </span>
               </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Clock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="number"
+                    min={1}
+                    max={durationUnit === 'Weeks' ? 104 : 365}
+                    required
+                    placeholder={durationUnit === 'Weeks' ? "e.g. 12" : "e.g. 14 or 30"}
+                    value={durationValue}
+                    onChange={(e) => setDurationValue(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white"
+                  />
+                </div>
+
+                {/* Duration Unit Selector: Weeks vs Days */}
+                <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-300 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setDurationUnit('Weeks')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      durationUnit === 'Weeks'
+                        ? 'bg-red-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Weeks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDurationUnit('Days')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      durationUnit === 'Days'
+                        ? 'bg-red-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Days
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Choose <strong>Weeks</strong> (e.g. 12 Weeks) or <strong>Days</strong> (e.g. 14 Days, 30 Days).
+              </p>
             </div>
 
             <div>

@@ -20,6 +20,8 @@ export type CourseLevel =
 
 export type CourseStatus = 'published' | 'draft' | 'archived';
 
+export type DurationUnit = 'Weeks' | 'Days';
+
 export type VideoPlacement = 'hero' | 'after_hero' | 'course_details';
 
 export interface SyllabusModule {
@@ -39,6 +41,8 @@ export interface Course {
   level: CourseLevel;
   duration_weeks: number;
   duration_text?: string;
+  duration_unit?: DurationUnit;
+  duration_value?: number;
   learning_mode?: string;
   image_url?: string;
   hours_per_week: number;
